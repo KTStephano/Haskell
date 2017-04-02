@@ -14,13 +14,16 @@ class List
 	size_t _length;
 
 private:
-	List( size_t size = 0 ) : _allocator( new A() ),
+	List( size_t size ) : _allocator( new A() ),
 							  _length(0) {
 		if ( size > 0 ) _reserve( size );
 	}
 
 public:
 	typedef T value_type;
+
+	explicit List() : List(0) {
+	}
 
 	explicit List(const std::initializer_list<T> & list) : List(list.size()) {
 		size_t i = 0;
