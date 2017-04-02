@@ -21,6 +21,9 @@
   <ItemGroup>
     <ClInclude Include="List.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3CD08B4D-2C0A-4A87-82C4-9E4F12E47E47}</ProjectGuid>
     <RootNamespace>Haskell</RootNamespace>

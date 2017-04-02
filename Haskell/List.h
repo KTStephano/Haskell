@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <stdexcept>
 #include <string>
+#include <iostream>
 
 template<typename T, typename A = std::allocator<T>>
 class List
@@ -12,39 +13,48 @@ class List
 	A * _allocator;
 	size_t _length;
 
+private:
+	List( size_t size = 0 ) : _allocator( new A() ),
+							  _length(0) {
+		if ( size > 0 ) _reserve( size );
+	}
+
 public:
 	typedef T value_type;
 
-	List(size_t size = 0) : _allocator(new A()) {
-		_reserve( size );
-	}
-
-	List(const std::initializer_list<T> & list) : List(list.size()) {
-		for (size_t i = 0; i < _length; ++i) {
-			_allocator->construct( &_list[i], list[i] );
+	explicit List(const std::initializer_list<T> & list) : List(list.size()) {
+		size_t i = 0;
+		for (const T & elem : list) {
+			_allocator->construct( &_list[i], elem );
+			++i;
 		}
 	}
 
-	List(const List & list) {
+	List(const List & list) : List() {
 		_deepCopy( list );
 	}
 
-	List(const List & list0, const List & list1) : List(list0._length + list1._length) {
-		_copyNoAlloc( list0, 0, list0._length );
-		_copyNoAlloc( list1, list0._length, list1._length );
+	explicit List(const List & list0, const List & list1) : List(list0._length + list1._length) {
+		_copyNoAlloc( list0, 0, list0._length, 0, list0._length );
+		_copyNoAlloc( list1, list0._length, _length, 0, list1._length );
 	}
 
-	List(const List & list, const T & newItem) : List(list._length + 1) {
+	explicit List(const List & list, const T & newItem) : List(list._length + 1) {
 		_copyNoAlloc( list );
 		_allocator->construct( &_list[_length - 1], newItem );
 	}
 
-	List(const T & newItem, const List & list) : List( list._length + 1 ) {
-		_copyNoAlloc( list, 1, _length );
+	explicit List(const T & newItem, const List & list) : List( list._length + 1 ) {
+		_copyNoAlloc( list, 1, _length, 0, list._length );
 		_allocator->construct( &list[0], newItem );
 	}
 
-	List(List && list) {
+	explicit List(const List & list, size_t copyStartInclusive, size_t copyEndExclusive)
+		: List(copyEndExclusive - copyStartInclusive) {
+		_copyNoAlloc( list, 0, _length, copyStartInclusive, copyEndExclusive );
+	}
+
+	List(List && list) : List() {
 		_shallowCopy( list );
 	}
 
@@ -56,11 +66,20 @@ public:
 
 	bool isNull() const
 	{
-		return _length == 0 && _list == nullptr;
+		return _length == 0;
 	}
 
 	size_t length() const {
 		return _length;
+	}
+
+	const T & head() const {
+		return _list[0];
+	}
+
+	List tail() const {
+		if ( _length == 0 ) throw std::out_of_range( "Attempting to access null tail position" );
+		return List( *this, 1, _length );
 	}
 
 	/** Overloaded operators */
@@ -72,19 +91,31 @@ public:
 	}
 
 	List operator+( const T & item ) const {
-		return List( *this, item );
+		return List( *this, item);
 	}
 
 	List operator+( const List & other ) const {
 		return List( *this, other );
 	}
 
-	List operator==( const List & other ) const {
+	bool operator==( const List & other ) const {
 		if ( _length != other._length ) return false;
 		for (size_t i = 0; i < _length; ++i) {
-			if ( ( *this )[i] != other[i] ) return false;
+			if ( _list[i] != other[i] ) return false;
 		}
 		return true;
+	}
+
+	friend std::ostream & operator<<( std::ostream & out, const List & list ){
+		std::string beginEnd;
+		std::string delim;
+		out << "[";
+		for (size_t i = 0; i < list.length(); ++i) {
+			out << " ";
+			out << list[i];
+		}
+		out << " ]";
+		return out;
 	}
 
 private:
@@ -109,11 +140,13 @@ private:
 		}
 	}
 
-	void _copyNoAlloc( const List & other, size_t startInclusive, size_t endExclusive )
+	void _copyNoAlloc( const List & other,
+					   size_t thisStartInclusive, size_t thisEndExclusive,
+					   size_t otherStartInclusive, size_t otherEndExclusive)
 	{
-		for ( size_t i = startInclusive; i < endExclusive; ++i )
+		for ( size_t i = thisStartInclusive, j = otherStartInclusive; i < thisEndExclusive; ++i, ++j )
 		{
-			_allocator->construct( &_list[i], other._list[i] );
+			_allocator->construct( &_list[i], other._list[j] );
 		}
 	}
 
