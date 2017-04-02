@@ -30,6 +30,13 @@ public:
 		}
 	}
 
+	List(T startInclusive, T endInclusive) : List (endInclusive - startInclusive + 1) {
+		for ( T i = 0; i < _length; ++i )
+		{
+			_allocator->construct( &_list[i], startInclusive + i );
+		}
+	}
+
 	List(const List & list) : List() {
 		_deepCopy( list );
 	}
@@ -77,9 +84,35 @@ public:
 		return _list[0];
 	}
 
+	const T & last() const {
+		return _list[_length - 1];
+	}
+
 	List tail() const {
 		if ( _length == 0 ) throw std::out_of_range( "Attempting to access null tail position" );
 		return List( *this, 1, _length );
+	}
+
+	/**
+	  * Returns everything except the last element
+	  */
+	List init() const {
+		if ( _length == 0 ) throw std::out_of_range( "Attempting to access null tail position" );
+		return List( *this, 0, _length - 1 );
+	}
+
+	List reverse() const {
+		return _reverse( *this );
+	}
+
+	List take(size_t numElements) const {
+		if ( numElements > _length ) return *this;
+		return List( *this, 0, numElements );
+	}
+
+	List drop(size_t numElements) const {
+		if ( numElements > _length ) return List();
+		return List( *this, numElements, _length );
 	}
 
 	/** Overloaded operators */
@@ -111,10 +144,10 @@ public:
 		std::string delim;
 		out << "[";
 		for (size_t i = 0; i < list.length(); ++i) {
-			out << " ";
 			out << list[i];
+			if ( i + 1 != list.length() ) out << ",";
 		}
-		out << " ]";
+		out << "]";
 		return out;
 	}
 
@@ -168,5 +201,10 @@ private:
 
 	bool _isInRange(size_t index) const {
 		return index >= 0 && index < _length;
+	}
+
+	static List _reverse(const List & list) {
+		if ( list.isNull() ) return List();
+		return List{ list.last() } + _reverse( list.init() );
 	}
 };
