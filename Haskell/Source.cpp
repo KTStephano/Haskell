@@ -19,8 +19,26 @@ static auto compose(Function1 f, Function2 g) {
 }
 */
 
+template<typename Car>
+void what( Car head )
+{
+	std::cout << head << std::endl;
+}
+
+template<typename Car, typename ... Cdr>
+void what(Car head, Cdr ... tail)
+{
+	std::cout << head << " ";
+	what( tail... );
+}
+
 int main()
 {
+	auto test = HList( 'a','z' );
+	std::cout << test << std::endl;
+	std::cout << TAKE( 1, test ) << std::endl;
+	auto iterable = List<int>( 1, 10 );
+	std::cout << TAIL( iterable ) << std::endl;
 	auto sqrtLambda = []( float num ) -> float { return sqrtf( num ); };
 	auto add1 = []( int num ) -> int { return num + 1; };
 	auto composed = [sqrtLambda, add1]( int num ) -> float { return sqrtLambda( add1( num ) ); };

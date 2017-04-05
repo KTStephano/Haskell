@@ -6,6 +6,10 @@
 #include <string>
 #include <iostream>
 
+#define HEAD(list) list.head()
+#define TAIL(list) list.tail()
+#define TAKE(elements, list) list.take(elements)
+
 template<typename T, typename A = std::allocator<T>>
 class List
 {

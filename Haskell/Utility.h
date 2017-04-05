@@ -2,6 +2,12 @@
 
 #include "List.h"
 
+template<typename T, typename ... Args>
+List<T> HList(T first, Args ... rest)
+{
+	return List<T>( first, rest... );
+}
+
 template<class Lambda, typename T>
 List<T> filter( Lambda pred, const List<T> & list )
 {
