@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="List.h" />
+    <ClInclude Include="Tuple.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>
   <ItemGroup>

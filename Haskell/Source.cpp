@@ -1,5 +1,6 @@
 #include "List.h"
 #include "Utility.h"
+#include "Tuple.h"
 #include <iostream>
 
 /**
@@ -34,6 +35,9 @@ void what(Car head, Cdr ... tail)
 
 int main()
 {
+	Tuple<int, int> t( 1, 1 );
+	std::cout << t.length() << std::endl;
+	//std::cout << get<1>( t ) << std::endl;
 	auto test = HList( 'a','z' );
 	std::cout << test << std::endl;
 	std::cout << TAKE( 1, test ) << std::endl;
