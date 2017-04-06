@@ -41,6 +41,20 @@ auto factorial = []( long long int n ) { return product( hlist( 1LL, n ) ); };
 
 auto even = []( auto i ) { return i % 2 == 0; };
 
+auto odd = []( auto i ) { return i % 2 != 0; };
+
+auto chain(unsigned int n = 1)
+{
+    if (n == 1) return hlist(n);
+    return even(n) ? hlist(n)+chain(n/2) : hlist(n)+chain(n*3+1);
+}
+
+auto numLongChain = []()
+{
+    auto isLong = [](auto x) { return length(x) > 15; };
+    return length(filter(isLong, (map (chain, hlsrange(1,100)))));
+};
+
 int main()
 {
 	show( myTakeWhile( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
@@ -84,6 +98,10 @@ int main()
 		return fst( x );
 	}, hlist(htuple( 1, 2 ), htuple( 3, 5 ), htuple( 6, 3 ), htuple( 2, 6 ), htuple( 2, 5 )) ) );
 	show( hlist( hlist( 1, 2 ), hlist( 3, 7 ), hlist( 4, 5 ) ) );
+    show(chain(10));
+    show(chain(1));
+    show(chain(30));
+    show(numLongChain());
 
 	return 0;
 }
