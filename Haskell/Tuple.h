@@ -1,6 +1,8 @@
 #pragma once
 
 #include <typeinfo>
+#include <iostream>
+#include <type_traits>
 
 // See https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-api-4.5/a01066_source.html
 // for full and clean standard implementation
@@ -9,22 +11,20 @@ template<std::size_t Index, typename Head, bool IsEmpty>
 class _HeadBase;
 
 template<std::size_t Index, typename Head>
-class _HeadBase<Index, Head, true> : public virtual Head
+class _HeadBase<Index, Head, true> : public Head
 {
 public:
 	_HeadBase() : Head()
 	{
-		std::cout << "Creating with nothing " << std::endl;
 	}
 
-	_HeadBase( const Head & head ) : Head( head ) {  }
+	_HeadBase( const Head & head ) : Head( head ) { }
 
-	_HeadBase(Head && head) : Head(head)
+	_HeadBase( Head && head ) : Head( std::forward<Head>( head ) )
 	{
-		std::cout << "Creating with  " << head << std::endl;
 	}
 
-	virtual ~_HeadBase() {  }
+	virtual ~_HeadBase() { }
 
 	const Head & get() const
 	{
@@ -40,19 +40,18 @@ class _HeadBase<Index, Head, false>
 public:
 	_HeadBase() : _data()
 	{
-		std::cout << "Creating with nothing " << std::endl;
 	}
 
-	_HeadBase(const Head & head) : _data(head)
+	_HeadBase( const Head & head ) : _data( head )
 	{
 	}
 
-	_HeadBase(Head && head) : _data(head)
+	_HeadBase( Head && head ) : _data( std::forward<Head>( head ) )
 	{
-		std::cout << "Creating with  " << head << std::endl;
+		std::cout << "Creating head with " << head << std::endl;
 	}
 
-	virtual ~_HeadBase() {  }
+	virtual ~_HeadBase() { }
 
 	const Head & get() const
 	{
@@ -67,79 +66,117 @@ class _TupleImpl;
 template<std::size_t Index>
 class _TupleImpl<Index>
 {
+public:
+	virtual ~_TupleImpl() { }
+
+protected:
+	virtual void _print( std::ostream & out, std::size_t length ) const { }
 };
 
 template<std::size_t Index, typename Head, typename ... Tail>
-class _TupleImpl<Index, Head, Tail...> : public virtual _TupleImpl<Index + 1, Tail...>,
-										 private virtual _HeadBase<Index, Head, std::is_empty<Head>::value>
+class _TupleImpl<Index, Head, Tail...> : public _TupleImpl<Index + 1, Tail...>,
+	protected _HeadBase<Index, Head, std::is_empty<Head>::value>
 {
+	typedef _TupleImpl<Index + 1, Tail...> _Next;
+	typedef _HeadBase<Index, Head, std::is_empty<Head>::value> _Data;
+
 public:
-	typedef _TupleImpl<Index + 1, Tail...> Next;
-	typedef _HeadBase<Index, Head, std::is_empty<Head>::value> Data;
-
-	_TupleImpl() : Next(), Data() {  }
-
-	explicit _TupleImpl(const Head & head, const Tail & ... tail) : Next(tail...), Data(head)
+	_TupleImpl() : _Next(), _Data()
 	{
 	}
 
-	explicit _TupleImpl(Head && head, Tail && ... tail) : Next(std::forward<Tail>(tail)...), Data(std::forward<Head>(head))
+	explicit _TupleImpl( const Head & head, const Tail & ... tail ) : _Next( tail... ), _Data( head )
 	{
-		std::cout << "Creating impl with " << head << std::endl;
 	}
 
-	_TupleImpl(const _TupleImpl & other) : Next(other.tail()), Data(other.head()) {  }
+	explicit _TupleImpl( Head && head, Tail && ... tail ) : _Next( std::forward<Tail>( tail )... ),
+		_Data( std::forward<Head>( head ) )
+	{
+	}
 
-	_TupleImpl(_TupleImpl && other) : Next(std::move(other.tail())), Data(std::move(other.head())) {  }
+	_TupleImpl( const _TupleImpl & other ) : _Next( other.tail() ), _Data( other.head() ) { }
 
-	virtual ~_TupleImpl() {  }
+	_TupleImpl( _TupleImpl && other ) : _Next( std::move( other.tail() ) ), _Data( std::move( other.head() ) ) { }
+
+	virtual ~_TupleImpl() { }
 
 	const Head & head() const
 	{
-		return Data::get();
+		return _Data::get();
 	}
 
-	const Next & tail() const
+	const _Next & tail() const
 	{
 		return *this;
+	}
+
+protected:
+	virtual void _print( std::ostream & out, std::size_t length ) const
+	{
+		std::string beforeAfterData = "";
+		if ( std::is_same<Head, char>::value ) beforeAfterData = "'";
+		out << beforeAfterData;
+		out << _Data::get();
+		out << beforeAfterData;
+		if ( Index + 1 < length ) out << ",";
+		_Next::_print( out, length );
 	}
 };
 
 template<typename ... Types>
-class Tuple : public virtual _TupleImpl<0, Types...>
+class Tuple : public _TupleImpl<0, Types...>
 {
 	typedef _TupleImpl<0, Types...> _Inherited;
 	std::size_t _length;
 
 public:
-	Tuple() : _Inherited(), _length(0)
+	Tuple() : _Inherited(), _length( 0 )
 	{
-		std::cout << "Creating with nothing" << std::endl;
 	}
 
-	explicit Tuple(const Types & ... elements) : _Inherited(elements...),
-												 _length(sizeof...(elements))
-	{ }
-
-	explicit Tuple(Types && ... elements) : _Inherited(std::forward<Types>(elements)...),
-											_length(sizeof...(elements))
+	explicit Tuple( const Types & ... elements ) : _Inherited( elements... ),
+		_length( sizeof...( elements ) )
 	{
-		std::cout << "Creating with rvalue length " << _length << std::endl;
 	}
 
-	Tuple(const Tuple & other) : _Inherited(static_cast<const _Inherited &>(other)),
-								 _length(other._length)
-	{ }
+	explicit Tuple( Types && ... elements ) : _Inherited( std::forward<Types>( elements )... ),
+		_length( sizeof...( elements ) )
+	{
+	}
 
-	Tuple(Tuple && other) : _Inherited(static_cast<_Inherited &&>(other)),
-							_length(other._length)
-	{ }
+	Tuple( const Tuple & other ) : _Inherited( static_cast<const _Inherited &>( other ) ),
+		_length( other._length )
+	{
+	}
 
-	virtual ~Tuple() {  }
+	Tuple( Tuple && other ) : _Inherited( static_cast<_Inherited &&>( other ) ),
+		_length( other._length )
+	{
+	}
+
+	virtual ~Tuple() { }
 
 	std::size_t length() const
 	{
 		return _length;
+	}
+
+	template<typename ... Elements>
+	/** Overloaded operators */
+	friend std::ostream & operator<<( std::ostream & out, const Tuple<Elements...> & tuple )
+	{
+		std::string beginEnd;
+		std::string delim;
+		out << "(";
+		tuple._print( out, tuple.length() );
+		out << ")";
+		return out;
+	}
+
+private:
+	virtual void _print( std::ostream & out, std::size_t length ) const
+	{
+		_Inherited::_print( out, length );
 	}
 };
 
@@ -149,7 +186,8 @@ struct TupleElementType;
 
 template<std::size_t Index, typename Head, typename ... Tail>
 struct TupleElementType<Index, Tuple<Head, Tail...>> : TupleElementType<Index - 1, Tuple<Tail...>>
-{ };
+{
+};
 
 // Base case
 template<typename Head, typename ... Tail>
@@ -159,13 +197,14 @@ struct TupleElementType<0, Tuple<Head, Tail...>>
 };
 
 template<std::size_t Index, typename Head, typename ... Tail>
-inline const Head & _getHelper(const _TupleImpl<Index, Head, Tail...> & tuple)
+inline const Head & _getHelper( const _TupleImpl<Index, Head, Tail...> & tuple )
 {
 	return tuple.head();
 }
 
 template<std::size_t Index, typename ... Elements>
-inline const typename TupleElementType<Index, Tuple<Elements...>>::type & get(const Tuple<Elements...> & tuple)
+inline const typename TupleElementType<Index, Tuple<Elements...>>::type & get( const Tuple<Elements...> & tuple )
 {
-	return _getHelper( tuple );
+	if ( Index < 0 || Index >= tuple.length() ) throw std::out_of_range( "Tuple: index out of range" );
+	return _getHelper<Index>( tuple );
 }

@@ -1,59 +1,40 @@
+#include <iostream>
+#include "Tuple.h"
 #include "List.h"
 #include "Utility.h"
-#include "Tuple.h"
-#include <iostream>
 
-/**
-template<class Function, typename T>
-static List<T> filter(Function pred, const List<T> & list) {
-	if ( list.isNull() ) return List<T>();
-	else if ( pred( list.head() ) ) return List<T>{list.head()} + filter( pred, list.tail() );
-	else return filter( pred, list.tail() );
-}
-*/
-
-/**
-template<class Function1, class Function2, typename R = std::result_of<Function1(Function2)>::type>
-static auto compose(Function1 f, Function2 g) {
-	using I = std::result_of<Function2( R )>;
-	return [f, g]( I i ) -> R { return f( g( i ) ); };
-}
-*/
-
-template<typename Car>
-void what( Car head )
+template<typename Lambda, typename T>
+auto myTakeWhile( Lambda pred, const List<T> & input, const List<T> & acc = List<T>() )
 {
-	std::cout << head << std::endl;
-}
+	if ( null( input ) ) return reverse( acc );
+	else if ( pred( head( input ) ) == false ) return reverse( acc );
+	return myTakeWhile( pred, tail( input ), hlist( head( input ) ) + acc );
+};
 
-template<typename Car, typename ... Cdr>
-void what(Car head, Cdr ... tail)
+template<typename Lambda, typename T>
+auto mySpan( Lambda pred, const List<T> & input, const List<T> & acc = List<T>() )
 {
-	std::cout << head << " ";
-	what( tail... );
-}
+	if ( null( input ) ) return htuple( reverse( acc ), List<T>() );
+	else if ( pred( input.head() ) == false ) return htuple( reverse( acc ), input );
+	return mySpan( pred, tail( input ), hlist( head( input ) ) + acc );
+};
+
+auto even = []( auto i ) { return i % 2 == 0; };
 
 int main()
 {
-	Tuple<int, int> t( 1, 1 );
-	std::cout << t.length() << std::endl;
-	//std::cout << get<1>( t ) << std::endl;
-	auto test = HList( 'a','z' );
-	std::cout << test << std::endl;
-	std::cout << TAKE( 1, test ) << std::endl;
-	auto iterable = List<int>( 1, 10 );
-	std::cout << TAIL( iterable ) << std::endl;
-	auto sqrtLambda = []( float num ) -> float { return sqrtf( num ); };
-	auto add1 = []( int num ) -> int { return num + 1; };
-	auto composed = [sqrtLambda, add1]( int num ) -> float { return sqrtLambda( add1( num ) ); };
-	std::cout << composed( 25 ) << std::endl;
-
-	auto even = []( int i ) -> bool { return i % 2 == 0; };
-	std::cout << filter( even, List<int>( 1, 10 ) ) << std::endl;
-
-	std::cout << map( []( int i ) { return List<int>{i}; }, List<int>( 1, 10 ) ) << std::endl;
-
-	std::cout << select( even, List<int>( 1, 4 ), List<char>( 'a', 'z' ) ) << std::endl;
+	print( myTakeWhile( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
+	print( mySpan( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
+	print( hlist( 1, 10 ), hlist( 'a', 'z' ) );
+	print( elem( 1, hlist( 1, 10 ) ) );
+	print( product( hlist( 1, 10 ) ) );
+	print( replicate( 4, 'h' ) );
+	print( take( 3, hlist( 5, 4, 3, 2, 1 ) ) );
+	print( drop( 100, hlist( 1, 2, 3, 4 ) ) );
+	print( minimum( hlist( 8, 4, 2, 1, 5, 6 ) ) );
+	print( maximum( hlist( 1, 9, 2, 3, 4 ) ) );
+	print( null( hlist() ) );
+	print( null( hlist( 1, 2, 3 ) ) );
 
 	while ( 1 )
 		;
