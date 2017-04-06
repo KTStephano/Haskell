@@ -42,6 +42,8 @@ auto chain(unsigned int n = 1)
     return even(n) ? hlist(n)+chain(n/2) : hlist(n)+chain(n*3+1);
 }
 
+auto addThree = [](auto x, auto y, auto z) { return x + y + z; };
+
 auto numLongChain = []()
 {
     auto isLong = [](auto x) { return length(x) > 15; };
@@ -95,6 +97,7 @@ int main()
     show(chain(1));
     show(chain(30));
     show(numLongChain());
+    show(map ([](auto a) { return fst(a) + snd(a); }, hlist(htuple(1,2),htuple(3,5),htuple(6,3),htuple(2,6),htuple(2,5))));
 
 	return 0;
 }
