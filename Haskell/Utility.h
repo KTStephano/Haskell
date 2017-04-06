@@ -4,6 +4,8 @@
 #include "List.h"
 #include "Tuple.h"
 
+/**
+
 template<std::size_t Arg, typename T>
 const T & _getArgumentHelper( std::size_t argument, const T & curr )
 {
@@ -64,6 +66,42 @@ template<typename T, typename ... Types>
 List<List<T>> hlist(const List<T> & first, const Types & ... rest)
 {
 	return _hlistinitializerlist( first, rest... );
+}
+ */
+
+auto hlist()
+{
+    return List<int>();
+}
+
+template<typename T>
+auto hlist(const T & last)
+{
+    return List<T>{last};
+}
+
+template<typename T, typename ... Rest>
+auto hlist(const T & first, const Rest & ... rest)
+{
+    return List<T>{first} + hlist(rest...);
+};
+
+String hlist( const char * str )
+{
+    if ( !str[0] ) return String();
+    return String{ str[0] } +hlist( str + 1 );
+}
+
+template<typename ... Strings>
+List<String> hlist(const char * str, const Strings * ... strings)
+{
+    return List<String>{ hlist( str ) } + List<String>{ hlist( strings... ) };
+}
+
+template<typename T>
+auto hlsrange(const T & start, const T & end)
+{
+    return List<T>(start, end);
 }
 
 template<typename ... Types>
