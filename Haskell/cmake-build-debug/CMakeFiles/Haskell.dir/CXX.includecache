@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/Stehano/Documents/HaskellVS/Haskell/Haskell/List.h
+initializer_list
+-
+stdexcept
+-
+string
+-
+
+/Users/Stehano/Documents/HaskellVS/Haskell/Haskell/Source.cpp
+iostream
+-
+cmath
+-
+Tuple.h
+/Users/Stehano/Documents/HaskellVS/Haskell/Haskell/Tuple.h
+List.h
+/Users/Stehano/Documents/HaskellVS/Haskell/Haskell/List.h
+Utility.h
+/Users/Stehano/Documents/HaskellVS/Haskell/Haskell/Utility.h
+
+/Users/Stehano/Documents/HaskellVS/Haskell/Haskell/Tuple.h
+typeinfo
+-
+iostream
+-
+type_traits
+-
+
+/Users/Stehano/Documents/HaskellVS/Haskell/Haskell/Utility.h
+type_traits
+-
+List.h
+/Users/Stehano/Documents/HaskellVS/Haskell/Haskell/List.h
+Tuple.h
+/Users/Stehano/Documents/HaskellVS/Haskell/Haskell/Tuple.h
+
