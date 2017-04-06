@@ -111,7 +111,7 @@ public:
 	}
 
 protected:
-	virtual void _print( std::ostream & out, std::size_t length ) const
+	void _print( std::ostream & out, std::size_t length ) const override
 	{
 		std::string beforeAfterData = "";
 		if ( std::is_same<Head, char>::value ) beforeAfterData = "'";
@@ -161,9 +161,8 @@ public:
 		return _length;
 	}
 
-	template<typename ... Elements>
 	/** Overloaded operators */
-	friend std::ostream & operator<<( std::ostream & out, const Tuple<Elements...> & tuple )
+	friend std::ostream & operator<<( std::ostream & out, const Tuple & tuple )
 	{
 		std::string beginEnd;
 		std::string delim;
@@ -174,7 +173,7 @@ public:
 	}
 
 private:
-	virtual void _print( std::ostream & out, std::size_t length ) const
+	void _print( std::ostream & out, std::size_t length ) const override
 	{
 		_Inherited::_print( out, length );
 	}
@@ -207,4 +206,16 @@ inline const typename TupleElementType<Index, Tuple<Elements...>>::type & get( c
 {
 	if ( Index < 0 || Index >= tuple.length() ) throw std::out_of_range( "Tuple: index out of range" );
 	return _getHelper<Index>( tuple );
+}
+
+template<typename T, typename K>
+auto fst( const Tuple<T, K> & tuple)
+{
+	return get<0>( tuple );
+}
+
+template<typename T, typename K>
+auto snd( const Tuple<T, K> & tuple )
+{
+	return get<1>( tuple );
 }

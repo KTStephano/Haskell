@@ -1,32 +1,31 @@
 #pragma once
 
 #include <type_traits>
-#include <typeinfo>
 #include "List.h"
 #include "Tuple.h"
 
 template<std::size_t Arg, typename T>
-T _getArgumentHelper( std::size_t argument, T curr )
+const T & _getArgumentHelper( std::size_t argument, const T & curr )
 {
 	if ( argument == Arg ) return curr;
 	throw std::out_of_range( "Index out of range to _getArgumentHelper" );
 };
 
 template<std::size_t Arg, typename T, typename ... Elements>
-T _getArgumentHelper( std::size_t argument, T curr, Elements ... elems )
+T _getArgumentHelper( std::size_t argument, const T & curr, const Elements & ... elems )
 {
 	if ( argument == Arg ) return curr;
 	return _getArgumentHelper<Arg>( argument, elems... );
 };
 
 template<typename T>
-List<T> _hlistinitializerlist( T last )
+List<T> _hlistinitializerlist( const T & last )
 {
 	return List<T>{last};
 }
 
 template<typename T, typename ... Elements>
-List<T> _hlistinitializerlist( T first, Elements ... elements )
+List<T> _hlistinitializerlist( const T & first, const Elements & ... elements )
 {
 	return List<T>{first} +_hlistinitializerlist( elements... );
 };
@@ -42,18 +41,30 @@ String hlist( const char * str )
 	return String{ str[0] } +hlist( str + 1 );
 }
 
+template<typename ... Strings>
+List<String> hlist(const char * str, const Strings * ... strings)
+{
+	return List<String>{ hlist( str ) } + List<String>{ hlist( strings... ) };
+}
+
 template<typename T>
-List<T> hlist( T last )
+List<T> hlist( const T & last )
 {
 	return List<T>{last};
 }
 
 template<typename T, typename ... Rest>
-List<T> hlist( T first, Rest ... rest )
+List<T> hlist( const T & first, const Rest & ... rest )
 {
 	if ( sizeof...( rest ) > 1 ) return _hlistinitializerlist( first, rest... );
 	else return List<T>( first, _getArgumentHelper<1>( 1, rest... ) );
 };
+
+template<typename T, typename ... Types>
+List<List<T>> hlist(const List<T> & first, const Types & ... rest)
+{
+	return _hlistinitializerlist( first, rest... );
+}
 
 template<typename ... Types>
 Tuple<Types...> htuple( const Types & ... args )
@@ -102,32 +113,32 @@ auto compose( Function1 f, Function2 g )
 
 
 template<typename T>
-void print( T & item )
+void show( T & item )
 {
 	std::cout << std::boolalpha;
 	std::cout << item << std::endl;
 }
 
 template<typename T>
-void print( T && item )
+void show( T && item )
 {
-	print( item );
+	show( item );
 }
 
 template<typename T, typename ... Types>
-void print( const T & item, const Types & ... rest )
+void show( const T & item, const Types & ... rest )
 {
 	std::cout << std::boolalpha;
 	std::cout << item << " ";
-	print( rest... );
+	show( rest... );
 };
 
 template<typename T, typename ... Types>
-void print( T && item, Types && ... rest )
+void show( T && item, Types && ... rest )
 {
 	std::cout << std::boolalpha;
 	std::cout << item << " ";
-	print( std::forward<Types>( rest )... );
+	show( std::forward<Types>( rest )... );
 };
 
 template<typename T>
@@ -135,4 +146,10 @@ auto replicate( std::size_t times, const T & element )
 {
 	if ( times == 0 ) return List<T>();
 	return hlist( element ) + replicate( times - 1, element );
+}
+
+template<typename T>
+T max(const T & first, const T & second)
+{
+	return first > second ? first : second;
 }

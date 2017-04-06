@@ -4,7 +4,6 @@
 #include <initializer_list>
 #include <stdexcept>
 #include <string>
-#include <iostream>
 
 template<typename T, typename A = std::allocator<T>>
 class List
@@ -181,11 +180,29 @@ public:
 	{
 		bool isGreater = length() > other.length();
 		std::size_t indices = isGreater ? other.length() : length();
-		for ( std::size_t i = 0; i < length(); ++i )
+		for ( std::size_t i = 0; i < indices; ++i )
 		{
-			if ( _list[i] < other[i] ) return false;
+			if ( _list[i] > other[i] ) return true;
+			else if ( _list[i] == other[i] ) continue;
+			return false;
 		}
 		return isGreater;
+	}
+
+	bool operator<( const List & other ) const
+	{
+		return other > *this;
+	}
+
+	bool operator>=( const List & other ) const
+	{
+		bool equal = *this == other;
+		return equal ? true : *this > other;
+	}
+
+	bool operator<=( const List & other ) const
+	{
+		return other >= *this;
 	}
 
 	bool operator==( const List & other ) const
