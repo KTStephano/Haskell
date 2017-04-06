@@ -45,9 +45,9 @@ int main()
 {
 	show( myTakeWhile( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
 	show( mySpan( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
-	show( hlist( 1, 10 ), hlist( 'a', 'z' ) );
-	show( elem( 1, hlist( 1, 10 ) ) );
-	show( product( hlist( 1, 10 ) ) );
+	show( hlsrange( 1, 10 ), hlsrange( 'a', 'z' ) );
+	show( elem( 1, hlsrange( 1, 10 ) ) );
+	show( product( hlsrange( 1, 10 ) ) );
 	show( replicate( 4, 'h' ) );
 	show( take( 3, hlist( 5, 4, 3, 2, 1 ) ) );
 	show( drop( 100, hlist( 1, 2, 3, 4 ) ) );
@@ -82,12 +82,8 @@ int main()
 	show( map( []( auto x )
 	{
 		return fst( x );
-	}, List<Tuple<int, int>>{htuple( 1, 2 ), htuple( 3, 5 ), htuple( 6, 3 ), htuple( 2, 6 ), htuple( 2, 5 )} ) );
+	}, hlist(htuple( 1, 2 ), htuple( 3, 5 ), htuple( 6, 3 ), htuple( 2, 6 ), htuple( 2, 5 )) ) );
 	show( hlist( hlist( 1, 2 ), hlist( 3, 7 ), hlist( 4, 5 ) ) );
-	List<List<int>> list{ hlist( 1,2 ), hlist( 1,2,3 ),hlist( 1,2,3,4 ) };
-	show( list );
 
-	while ( 1 )
-		;
 	return 0;
 }
