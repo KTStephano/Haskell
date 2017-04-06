@@ -191,3 +191,10 @@ T max(const T & first, const T & second)
 {
 	return first > second ? first : second;
 }
+
+template<typename Lambda, typename T>
+auto zipWith( Lambda proc, const List<T> & first, const List<T> & second)
+{
+    if ( null( first ) || null( second ) ) return List<T>();
+    return hlist( proc( head( first ), head( second ) ) ) + zipWith( proc, tail( first ), tail( second ) );
+}

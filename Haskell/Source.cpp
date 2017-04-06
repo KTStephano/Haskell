@@ -30,13 +30,6 @@ auto quicksort(const List<T> & list)
 	return smallerSorted + hlist( x ) + biggerSorted;
 }
 
-template<typename Lambda, typename T>
-auto zipWith( Lambda proc, const List<T> & first, const List<T> & second)
-{
-	if ( null( first ) || null( second ) ) return List<T>();
-	return hlist( proc( head( first ), head( second ) ) ) + zipWith( proc, tail( first ), tail( second ) );
-}
-
 auto factorial = []( long long int n ) { return product( hlist( 1LL, n ) ); };
 
 auto even = []( auto i ) { return i % 2 == 0; };
