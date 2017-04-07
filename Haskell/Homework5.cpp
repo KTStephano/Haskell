@@ -40,11 +40,34 @@ auto combinations3 = [&](auto ls)
 	return ::combinations3Helper( x, tail( ls ) ) + ::combinations3( tail( ls ) );
 };
 
+// Question 4
+
+auto runLengthEncodeHelper = [&](auto item, auto ls, int count = 1)
+{
+	if ( null( ls ) ) return hlist(htuple( item, count + 1 ));
+	if ( item != head( ls ) ) return hlist(htuple( item, count )) + ::runLengthEncodeHelper( head( ls ), tail( ls ) );
+	return ::runLengthEncodeHelper( item, tail( ls ), count + 1 );
+};
+
+auto runLengthEncode = [&](auto ls)
+{
+	return ::runLengthEncodeHelper( head( ls ), tail( ls ) );
+};
+
+// Question 5
+
+auto runLengthDecode = []( auto ls )
+{
+	return flatten( map( []( auto tuple ) { return replicate( snd( tuple ), fst( tuple ) ); }, ls ) );
+};
+
 int main()
 {
 	show( myTakeWhile( []( auto x ) { return x != ' '; }, hlist( "This is practice." ) ) );
 	show( mySpan( []( auto x ) { return x != ' '; }, hlist( "This is practice." ) ) );
 	show( combinations3( hlist( "ABCDE" ) ) );
+	show( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4 ) ) );
+	show( runLengthDecode( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4 ) ) ) );
 
 	while ( 1 )
 		;

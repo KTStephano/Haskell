@@ -143,3 +143,10 @@ auto foldl(Lambda proc, const K & acc, const List<T> & list)
     if ( null (list) ) return K(acc);
     return foldl (proc, proc ( head (list), acc), tail (list));
 };
+
+template<typename T>
+auto flatten(const List<T> & list)
+{
+	if ( null( list ) ) return T();
+	return head( list ) + flatten( tail( list ) );
+}
