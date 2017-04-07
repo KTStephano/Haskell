@@ -62,7 +62,7 @@ auto numLongChain = []()
     return length(filter(isLong, (map (chain, hlsrange(1,100)))));
 };
 
-int main()
+int _haskell()
 {
 	show( myTakeWhile( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
 	show( mySpan( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
@@ -74,7 +74,7 @@ int main()
 	show( drop( 100, hlist( 1, 2, 3, 4 ) ) );
 	show( minimum( hlist( 8, 4, 2, 1, 5, 6 ) ) );
 	show( maximum( hlist( 1, 9, 2, 3, 4 ) ) );
-	show( null( hlist() ) );
+	//show( null( hlist() ) );
 	show( null( hlist( 1, 2, 3 ) ) );
 	show( hlist( "hello", "goodbye", "what" ) );
 	show( factorial(50) );
@@ -113,5 +113,7 @@ int main()
     show("reverse_foldl",reverse_foldl(hlist(1,2,3,4)));
     show("reverse_foldr",reverse_foldr(hlist(1,2,3,4)));
 
+	while ( 1 )
+		;
 	return 0;
 }

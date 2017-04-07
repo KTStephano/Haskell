@@ -116,12 +116,12 @@ public:
 
 	const T & head() const
 	{
-		return _list[0];
+		return (*this)[0];
 	}
 
 	const T & last() const
 	{
-		return _list[_length - 1];
+		return (*this)[_length - 1];
 	}
 
 	List tail() const
