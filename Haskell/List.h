@@ -405,3 +405,9 @@ auto reverse( const List<T> & list )
 {
 	return list.reverse();
 }
+
+template<typename T>
+auto empty( const List<T> & list )
+{
+    return list.getNullVariant();
+}

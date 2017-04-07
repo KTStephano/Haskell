@@ -198,3 +198,17 @@ auto zipWith( Lambda proc, const List<T> & first, const List<T> & second)
     if ( null( first ) || null( second ) ) return List<T>();
     return hlist( proc( head( first ), head( second ) ) ) + zipWith( proc, tail( first ), tail( second ) );
 }
+
+template<typename Lambda, typename T, typename K>
+auto foldr(Lambda proc, const K & seed, const List<T> & list)
+{
+    if ( null (list) ) return K(seed);
+    return proc (head (list), foldr (proc, seed, tail (list)));
+};
+
+template<typename Lambda, typename T, typename K>
+auto foldl(Lambda proc, const K & acc, const List<T> & list)
+{
+    if ( null (list) ) return K(acc);
+    return foldl (proc, proc ( head (list), acc), tail (list));
+};

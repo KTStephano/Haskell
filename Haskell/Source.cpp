@@ -44,6 +44,18 @@ auto chain(unsigned int n = 1)
 
 auto addThree = [](auto x, auto y, auto z) { return x + y + z; };
 
+auto reverse_foldl = [](auto ls)
+{
+    auto helper = [](auto x, auto y) { return hlist(x) + y; };
+    return foldl(helper, empty(ls), ls);
+};
+
+auto reverse_foldr = [](auto ls)
+{
+    auto helper = [](auto x, auto y) { return y + hlist(x); };
+    return foldr(helper, empty(ls), ls);
+};
+
 auto numLongChain = []()
 {
     auto isLong = [](auto x) { return length(x) > 15; };
@@ -98,6 +110,8 @@ int main()
     show(chain(30));
     show(numLongChain());
     show(map ([](auto a) { return fst(a) + snd(a); }, hlist(htuple(1,2),htuple(3,5),htuple(6,3),htuple(2,6),htuple(2,5))));
+    show("reverse_foldl",reverse_foldl(hlist(1,2,3,4)));
+    show("reverse_foldr",reverse_foldr(hlist(1,2,3,4)));
 
 	return 0;
 }
