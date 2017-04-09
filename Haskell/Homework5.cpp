@@ -33,7 +33,8 @@ int main()
     show(test(hlist(1,2,3))(hlist(4,5,6)));
 	show( permutations( hlist( "ABC" ) ) );
     show(filter([](auto x) { return x != ' '; }, hlist("hello what")));
-	show( compose( std::sqrtf, std::sqrtf )( 12 ) );
+	show( compose(add1, compose( std::sqrtf, std::sqrtf ))( 12 ) );
+	show( map( identity( 1 ), hlsrange( 1, 100 ) ) );
 
 	while ( 1 )
 		;

@@ -158,3 +158,9 @@ auto flatten(const List<T> & list)
 	if ( null( list ) ) return T();
 	return head( list ) + flatten( tail( list ) );
 }
+
+template<typename T>
+auto identity(const T & item)
+{
+	return [=]( auto a ) { return item; };
+}
