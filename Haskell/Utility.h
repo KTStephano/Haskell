@@ -74,10 +74,18 @@ List<Tuple<T, K>> zip( const List<T> & first, const List<K> & second )
 	return hlist( htuple( first.head(), second.head() ) ) + zip( first.tail(), second.tail() );
 };
 
+/**
 template<typename T, class Function1, class Function2, typename R = typename std::result_of<Function1( T )>::type>
 auto compose( Function1 f, Function2 g )
 {
 	return [f, g]( T i ) -> R { return f( g( i ) ); };
+}
+*/
+
+template<class Lambda1, class Lambda2>
+auto compose(Lambda1 f, Lambda2 g)
+{
+	return [=]( auto ... xs ) { return f( g( xs... ) ); };
 }
 
 

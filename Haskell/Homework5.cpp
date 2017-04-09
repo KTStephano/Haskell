@@ -26,11 +26,14 @@ auto permutations(const List<T> & xs)
 	));
 }
 
+auto add1 = []( auto x ) { return x + 1; };
+
 int main()
 {
     show(test(hlist(1,2,3))(hlist(4,5,6)));
 	show( permutations( hlist( "ABC" ) ) );
     show(filter([](auto x) { return x != ' '; }, hlist("hello what")));
+	show( compose( std::sqrtf, std::sqrtf )( 12 ) );
 
 	while ( 1 )
 		;
