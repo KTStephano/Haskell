@@ -112,6 +112,12 @@ auto replicate( std::size_t times, const T & element )
 }
 
 template<typename T>
+auto replicate(std::size_t times)
+{
+	return [=]( const T & elem ) { return ::replicate<T>( times, elem ); };
+}
+
+template<typename T>
 T max(const T & first, const T & second)
 {
 	return first > second ? first : second;
@@ -151,4 +157,11 @@ template<typename T>
 auto identity(const T & item)
 {
 	return [=]( auto a ) { return item; };
+}
+
+// concatMap 
+template<typename Lambda, typename T>
+auto concatMap(Lambda proc, const List<T> & list)
+{
+	return concat( map( proc, list ) );
 }
