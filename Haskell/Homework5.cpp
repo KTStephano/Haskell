@@ -28,7 +28,7 @@ auto permutations(const List<T> & xs)
 
 auto add1 = []( auto x ) { return x + 1; };
 
-int main()
+int _main2()
 {
     show(test(hlist(1,2,3))(hlist(4,5,6)));
 	show( permutations( hlist( "ABC" ) ) );

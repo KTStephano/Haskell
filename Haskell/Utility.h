@@ -90,16 +90,10 @@ auto compose(Lambda1 f, Lambda2 g)
 
 
 template<typename T>
-void show( T & item )
+void show( const T & item )
 {
 	std::cout << std::boolalpha;
 	std::cout << item << std::endl;
-}
-
-template<typename T>
-void show( T && item )
-{
-	show( item );
 }
 
 template<typename T, typename ... Types>
@@ -108,14 +102,6 @@ void show( const T & item, const Types & ... rest )
 	std::cout << std::boolalpha;
 	std::cout << item << " ";
 	show( rest... );
-};
-
-template<typename T, typename ... Types>
-void show( T && item, Types && ... rest )
-{
-	std::cout << std::boolalpha;
-	std::cout << item << " ";
-	show( std::forward<Types>( rest )... );
 };
 
 template<typename T>

@@ -62,7 +62,7 @@ auto numLongChain = []()
     return length(filter(isLong, (map (chain, hlsrange(1,100)))));
 };
 
-int _main()
+int main()
 {
 	show( myTakeWhile( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
 	show( mySpan( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );

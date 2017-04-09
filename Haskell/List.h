@@ -1,88 +1,73 @@
 #pragma once
 
-//#include <allocators>
-#include <initializer_list>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
-template<typename T, typename A = std::allocator<T>>
+template<typename T>
 class List
 {
-	T * _list = nullptr;
-	A * _allocator;
-	size_t _length;
-
-private:
-	List( size_t size ) : _allocator( new A() ),
-		_length( 0 )
+	typedef struct _Data
 	{
-		if ( size > 0 ) _reserve( size );
-	}
+		T * item = nullptr;
+		std::shared_ptr<_Data> next;
+
+		_Data(const T & item) : item(new T(item)) {  }
+
+		~_Data()
+		{
+			delete item;
+		}
+	};
+
+	std::shared_ptr<_Data> _list;
+	std::shared_ptr<_Data> _last;
+	size_t _length;
 
 public:
 	typedef T value_type;
 
-	explicit List() : List( 0 )
+	explicit List() : _length( 0 ) {  }
+
+	explicit List( const std::initializer_list<T> & list ) : List()
 	{
+		for ( const T & element : list ) _insertLast( element );
 	}
 
-	explicit List( const std::initializer_list<T> & list ) : List( list.size() )
+	explicit List(T startInclusive, T endInclusive) : List()
 	{
-		size_t i = 0;
-		for ( const T & elem : list )
-		{
-			_allocator->construct( &_list[i], elem );
-			++i;
-		}
+		size_t len = endInclusive - startInclusive + 1;
+		for ( T i = 0; i < len; ++i ) _insertLast( startInclusive + i );
 	}
 
-	List( T startInclusive, T endInclusive ) : List( endInclusive - startInclusive + 1 )
+	List(const List & list) : List()
 	{
-		for ( T i = 0; i < _length; ++i )
-		{
-			_allocator->construct( &_list[i], startInclusive + i );
-		}
+		_shallowCopy( list ); // Shallow copy is intentional
 	}
 
-	List( const List & list ) : List()
-	{
-		_deepCopy( list );
-	}
-
-	explicit List( const List & list0, const List & list1 ) : List( list0._length + list1._length )
-	{
-		_copyNoAlloc( list0, 0, list0._length, 0, list0._length );
-		_copyNoAlloc( list1, list0._length, _length, 0, list1._length );
-	}
-
-	explicit List( const List & list, const T & newItem ) : List( list._length + 1 )
-	{
-		_copyNoAlloc( list );
-		_allocator->construct( &_list[_length - 1], newItem );
-	}
-
-	explicit List( const T & newItem, const List & list ) : List( list._length + 1 )
-	{
-		_copyNoAlloc( list, 1, _length, 0, list._length );
-		_allocator->construct( &list[0], newItem );
-	}
-
-	explicit List( const List & list, size_t copyStartInclusive, size_t copyEndExclusive )
-		: List( copyEndExclusive - copyStartInclusive )
-	{
-		_copyNoAlloc( list, 0, _length, copyStartInclusive, copyEndExclusive );
-	}
-
-	List( List && list ) : List()
+	List(List && list) : List()
 	{
 		_shallowCopy( list );
 	}
 
-	~List()
+	explicit List(const List & list0, const List & list1) : List()
 	{
-		_destroy();
-		delete _allocator;
-		_allocator = nullptr;
+		_copyTwoLs( list0, list1 );
+	}
+
+	explicit List(const List & list, const T & newItem) : List()
+	{
+		_copyLsItem( list, newItem );
+	}
+
+	explicit List(const T & newItem, const List & list) : List()
+	{
+		_copyItemLs( newItem, list );
+	}
+
+	explicit List(const List & list, size_t startInclusive, size_t endExclusive) : List()
+	{
+		_shallowCopy( list, startInclusive, endExclusive );
 	}
 
 	List<T> getNullVariant() const
@@ -95,18 +80,13 @@ public:
 		return _length == 0;
 	}
 
-	bool contains( const T & elem ) const
+	bool contains(const T & elem) const
 	{
-		for ( int i = 0; i < _length; ++i )
+		for (size_t i = 0; i < _length; ++i)
 		{
 			if ( ( *this )[i] == elem ) return true;
 		}
 		return false;
-	}
-
-	bool contains( T && elem ) const
-	{
-		return contains( elem );
 	}
 
 	size_t length() const
@@ -114,14 +94,16 @@ public:
 		return _length;
 	}
 
+	// Constant time
 	const T & head() const
 	{
-		return (*this)[0];
+		return ( *this )[0];
 	}
 
+	// Constant time
 	const T & last() const
 	{
-		return (*this)[_length - 1];
+		return ( *this )[_length - 1];
 	}
 
 	List tail() const
@@ -131,11 +113,11 @@ public:
 	}
 
 	/**
-	* Returns everything except the last element
-	*/
+	  * Returns everything except the last element
+	  */
 	List init() const
 	{
-		if ( _length == 0 ) throw std::out_of_range( "Attempting to access null tail position" );
+		if ( _length == 0 ) throw std::out_of_range( "Attempting to call init on the empty list" );
 		return List( *this, 0, _length - 1 );
 	}
 
@@ -144,26 +126,32 @@ public:
 		return _reverse( *this );
 	}
 
-	List take( size_t numElements ) const
+	List take(size_t numElements) const
 	{
 		if ( numElements > _length ) return *this;
 		return List( *this, 0, numElements );
 	}
 
-	List drop( size_t numElements ) const
+	List drop(size_t numElements) const
 	{
 		if ( numElements > _length ) return List();
 		return List( *this, numElements, _length );
 	}
 
 	/** Overloaded operators */
-	const T & operator[]( size_t index ) const
+	const T & operator[](size_t index) const
 	{
-		if ( !_isInRange( index ) )
+		if (!_isInRange(index))
 		{
 			throw std::out_of_range( "List index out of range at " + std::to_string( index ) );
 		}
-		return _list[index];
+		if ( index + 1 == _length && _length > 1 ) return *( _last->item );
+		std::shared_ptr<_Data> ret = _list;
+		for (size_t i = 0; i < index; ++i)
+		{
+			ret = ret->next;
+		}
+		return *( ret->item );
 	}
 
 	List operator+( const T & item ) const
@@ -180,10 +168,17 @@ public:
 	{
 		bool isGreater = length() > other.length();
 		std::size_t indices = isGreater ? other.length() : length();
-		for ( std::size_t i = 0; i < indices; ++i )
+		std::shared_ptr<_Data> currThis = _list;
+		std::shared_ptr<_Data> currOther = other._list;
+		for (size_t i = 0; i < indices; ++i)
 		{
-			if ( _list[i] > other[i] ) return true;
-			else if ( _list[i] == other[i] ) continue;
+			if ( *( currThis->item ) > *( currOther->item ) ) return true;
+			if ( *( currThis->item ) == *( currOther->item ) )
+			{
+				currThis = currThis->next;
+				currOther = currOther->next;
+				continue;
+			}
 			return false;
 		}
 		return isGreater;
@@ -208,9 +203,13 @@ public:
 	bool operator==( const List & other ) const
 	{
 		if ( _length != other._length ) return false;
-		for ( size_t i = 0; i < _length; ++i )
+		std::shared_ptr<_Data> currThis = _list;
+		std::shared_ptr<_Data> currOther = other._list;
+		for (size_t i = 0; i < _length; ++i)
 		{
-			if ( _list[i] != other[i] ) return false;
+			if ( *( currThis->item ) != *( currOther->item ) ) return false;
+			currThis = currThis->next;
+			currOther = currOther->next;
 		}
 		return true;
 	}
@@ -227,78 +226,125 @@ public:
 			delim = "";
 		}
 		out << begin;
-		for ( size_t i = 0; i < list.length(); ++i )
-		{
-			out << list[i];
-			if ( i + 1 != list.length() ) out << delim;
-		}
+		list._printElements( out, delim );
 		out << end;
 		return out;
 	}
 
 private:
-	void _deepCopy( const List & other )
+	void _printElements(std::ostream & out, const std::string delim) const
 	{
-		_reserve( other._length );
-		_copyNoAlloc( other );
+		std::shared_ptr<_Data> curr = _list;
+		for (size_t i = 0; i < _length; ++i)
+		{
+			out << *( curr->item );
+			if ( i + 1 != _length ) out << delim;
+			curr = curr->next;
+		}
 	}
 
-	void _shallowCopy( List & other )
+	// This is a dangerous function - only call when doing the equivalent of 
+	// a deep copy since it modifies the last object of the list (which could
+	// be referenced by many other lists)
+	void _insertLast(const T & item)
+	{
+		if (_length == 0)
+		{
+			_list = std::make_shared<_Data>( item );
+			_last = _list;
+		}
+		else
+		{
+			std::shared_ptr<_Data> newEntry = std::make_shared<_Data>( item );
+			_last->next = newEntry;
+			_last = newEntry;
+		}
+		++_length;
+	}
+
+	void _deepCopy(const List & other)
+	{
+		std::shared_ptr<_Data> curr = other._list;
+		for ( size_t i = 0; i < other._length; ++i )
+		{
+			_insertLast( *( curr->item ) );
+			curr = curr->next;
+		}
+	}
+
+	void _shallowCopy(const List & other)
 	{
 		_list = other._list;
-		_allocator = other._allocator;
+		_last = other._last;
 		_length = other._length;
-		other._list = nullptr;
-		other._allocator = nullptr;
-		other._length = 0;
 	}
 
-	void _copyNoAlloc( const List & other )
+	void _shallowCopy(const List & other, size_t startInclusive, size_t endExclusive)
 	{
-		for ( size_t i = 0; i < _length; ++i )
+		if ( startInclusive == 0 && endExclusive == other._length )
 		{
-			_allocator->construct( &_list[i], other._list[i] );
+			_shallowCopy( other );
+			return;
+		}
+
+		_length = endExclusive - startInclusive;
+		std::shared_ptr<_Data> curr = other._list;
+		for (size_t i = 0; i < endExclusive; ++i)
+		{
+			if ( i == startInclusive )
+			{
+				_list = curr;
+				if (endExclusive == other._length && _length > 1)
+				{
+					_last = other._last;
+					return;
+				}
+			}
+			if ( i + 1 == endExclusive ) _last = curr;
+			curr = curr->next;
 		}
 	}
 
-	void _copyNoAlloc( const List & other,
-					   size_t thisStartInclusive, size_t thisEndExclusive,
-					   size_t otherStartInclusive, size_t otherEndExclusive )
+	void _copyTwoLs(const List & list0, const List & list1)
 	{
-		for ( size_t i = thisStartInclusive, j = otherStartInclusive; i < thisEndExclusive; ++i, ++j )
+		_deepCopy( list0 );
+		if (list0._length == 0)
 		{
-			_allocator->construct( &_list[i], other._list[j] );
+			_list = list1._list;
+			_last = list1._last;
 		}
-	}
-
-	void _destroy()
-	{
-		if ( isNull() ) return;
-		for ( size_t i = 0; i < _length; ++i )
+		else
 		{
-			_allocator->destroy( &_list[i] );
+			_last->next = list1._list;
+			_last = list1._last;
 		}
-		_allocator->deallocate( _list, _length );
-		_length = 0;
-		_list = nullptr;
+		_length += list1._length;
 	}
 
-	void _reserve( size_t size )
+	void _copyLsItem(const List & list, const T & item)
 	{
-		_destroy();
-		_length = size;
-		_list = _allocator->allocate( _length );
+		_deepCopy( list );
+		_insertLast( item );
 	}
 
-	bool _isInRange( size_t index ) const
+	void _copyItemLs(const T & item, const List & list)
+	{
+		_insertLast( item );
+		_list->next = list._list;
+		_last = list._last;
+		_length += list._length;
+	}
+
+	bool _isInRange(size_t index) const 
 	{
 		return index >= 0 && index < _length;
 	}
 
-	static List _reverse( const List & list )
+	static List _reverse(const List & list)
 	{
 		if ( list.isNull() ) return List();
-		return List{ list.last() } +_reverse( list.init() );
+		if ( list.length() == 1 ) return List{ list.head() };
+		return _reverse( list.tail() ) + List{ list.head() };
 	}
 };
 
@@ -409,5 +455,5 @@ auto reverse( const List<T> & list )
 template<typename T>
 auto empty( const List<T> & list )
 {
-    return list.getNullVariant();
+	return list.getNullVariant();
 }
