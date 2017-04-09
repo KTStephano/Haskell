@@ -13,7 +13,7 @@ auto permutations(const List<T> & xs)
 	if ( null( xs ) ) return hlist( xs );
 
 	return 
-	flatten(map(
+		concat(map(
 	[=]( auto x )
 	{
 		return 

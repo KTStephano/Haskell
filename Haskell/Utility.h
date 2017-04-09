@@ -138,13 +138,15 @@ auto foldl(Lambda proc, const K & acc, const List<T> & list)
     return foldl (proc, proc ( head (list), acc), tail (list));
 };
 
+// concat :: [[a]] -> [a]
 template<typename T>
-auto flatten(const List<T> & list)
+auto concat(const List<T> & list)
 {
 	if ( null( list ) ) return T();
-	return head( list ) + flatten( tail( list ) );
+	return head( list ) + concat( tail( list ) );
 }
 
+// identity :: a -> (b -> a)
 template<typename T>
 auto identity(const T & item)
 {
