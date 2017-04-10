@@ -3,6 +3,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <math.h>
 
 template<typename T>
 class List
@@ -34,10 +35,28 @@ public:
 		for ( const T & element : list ) _insertLast( element );
 	}
 
+	// for [x..n]
 	explicit List(T startInclusive, T endInclusive) : List()
 	{
 		size_t len = endInclusive - startInclusive + 1;
 		for ( T i = 0; i < len; ++i ) _insertLast( startInclusive + i );
+	}
+
+	// for [x,y..n]
+	explicit List(T startInclusive, T nextInclusive, T endInclusive) : List()
+	{
+		if ( nextInclusive < 0 ) return; // Leave as empty list (Haskell does this too)
+		T offset = nextInclusive - startInclusive;
+		if ( offset < 0 && startInclusive < endInclusive ) offset *= -1;
+		T curr = startInclusive;
+		std::cout << startInclusive << " " << nextInclusive << " " << endInclusive << " " << offset << " " << curr << std::endl;
+		while (true)
+		{
+			if ( startInclusive < endInclusive && curr > endInclusive ) break;
+			if ( startInclusive > endInclusive && curr < endInclusive ) break;
+			_insertLast( curr );
+			curr += offset;
+		}
 	}
 
 	List(const List & list) : List()

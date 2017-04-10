@@ -1,5 +1,24 @@
 #include "Utility.h"
 
+template<typename T>
+auto permutations( const List<T> & xs )
+{
+	if ( null( xs ) ) return hlist( xs );
+
+	return
+		concat( map(
+			[=]( auto x )
+	{
+		return
+			map( [=]( auto y ) { return hlist( x ) + y; },
+				 permutations( filter( [=]( auto z )
+		{
+			return x != z;
+		}, xs ) ) );
+	}, xs
+		) );
+}
+
 // Question 4
 template<typename T>
 auto runLengthEncodeHelper(const T & curr, const List<T> & list, int acc)
@@ -46,7 +65,7 @@ auto encipher = [](auto ls0, auto ls1, auto msg)
 
 auto factors = [](auto n)
 {
-    // This uses a list comprehension
+    // filter (\pair -> fst pair * snd pair == n) $ [(x,y) | x <- [1..n], y <- [1..n]]
    return filter([=](auto pair) { return fst(pair)*snd(pair)==n; },concatMap ([=](auto x)
          {
              return map([=](auto y) { return htuple(x,y);}, hlsrange(1,n));
@@ -55,37 +74,44 @@ auto factors = [](auto n)
 
 auto primes = [](auto n)
 {
-    // This is a list comprehension
+    // filter (\z -> length (factors z) == 2) $ [x | x <- [1..n]]
     return filter([=](auto z) { return length(factors(z)) == 2; }, hlsrange(1,n));
 };
 
-template<typename T>
-auto permutations(const List<T> & xs)
+auto goldbach = [=](auto n)
 {
-    if ( null( xs ) ) return hlist( xs );
-
-    return
-            concat(map(
-                    [=]( auto x )
-                    {
-                        return
-                                map( [=]( auto y ) { return hlist( x ) + y; },
-                                     permutations( filter( [=]( auto z )
-                                                           {
-                                                               return x != z;
-                                                           }, xs )));
-                    }, xs
-            ));
-}
-
-class Test
-{
-public:
-	int operator|( int a ) const
+	auto p = ::primes( n );
+	// filter (\pair -> fst pair + snd pair == n) $ concat [(x,y) | x <- p, y <- p]
+	return filter( [=]( auto pair )
 	{
-		return a;
-	}
+		return fst( pair ) + snd( pair ) == n;
+	}, concatMap( [=]( auto x )
+	{
+		return map( [=]( auto y ) { return htuple( x, y ); }, p );
+	}, p ) );
 };
+
+auto increasing = [](auto ls)
+{
+	// [(x,y) | x <- zip ls [1..(length ls)], y <- zip ls [1..(length ls), snd y > snd x]]
+	auto len = length( ls );
+	auto zipped = zip( ls, hlsrange( size_t(1), len ) );
+	return concatMap([=](auto x)
+	{
+		return map( [=]( auto y ) { return hlist( x, y ); }, filter( [=]( auto pair )
+		{
+			return snd( pair ) > snd( x );
+		}, zipped) );
+	}, zipped );
+};
+
+// (1,2,3,4)
+// (4,3,2,1)
+// (1,4)(2,3)(3,2)(4,1)
+
+// (1,2,4,3)
+// (3,4,2,1)
+// (1,3)(2,4)(4,2)(3,1)
 
 int main()
 {
@@ -97,7 +123,8 @@ int main()
     show(encipher(hlsrange('A','Z'),hlsrange('a','z'),hlist("THIS")));
     show(and(hlist(true,true,true,true,true,true,false)));
     show(primes(25));
-	show( Test() | 4 );
+	show( goldbach( 6 ) );
+	show( increasing( hlist( "ABBD" ) ) );
 
 	while ( 1 )
 		;

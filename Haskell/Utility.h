@@ -35,6 +35,12 @@ auto hlsrange(const T & start, const T & end)
     return List<T>(start, end);
 }
 
+template<typename T>
+auto hlsrange(const T & start, const T & next, const T & end)
+{
+	return List<T>( start, next, end );
+}
+
 template<typename ... Types>
 Tuple<Types...> htuple( const Types & ... args )
 {
