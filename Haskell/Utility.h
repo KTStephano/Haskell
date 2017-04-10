@@ -168,9 +168,9 @@ auto concatMap(Lambda proc, const List<T> & list)
 
 // and :: [Bool] -> Bool
 template<typename T = bool>
-auto andf(const List<T> & list)
+auto and(const List<T> & list)
 {
 	if (null(list)) return true;
 	if (head(list) != true) return false;
-	return andf(tail(list));
+	return and(tail(list));
 }

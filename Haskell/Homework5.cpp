@@ -78,6 +78,15 @@ auto permutations(const List<T> & xs)
             ));
 }
 
+class Test
+{
+public:
+	int operator|( int a ) const
+	{
+		return a;
+	}
+};
+
 int main()
 {
     show(runLengthEncode(hlist (4,2,2,1,1,1,1,4,4,4,4)));
@@ -86,7 +95,11 @@ int main()
     show(2+3);
     show(hlist("hello")+hlist("george"));
     show(encipher(hlsrange('A','Z'),hlsrange('a','z'),hlist("THIS")));
-    show(andf(hlist(true,true,true,true,true,true,false)));
+    show(and(hlist(true,true,true,true,true,true,false)));
     show(primes(25));
+	show( Test() | 4 );
+
+	while ( 1 )
+		;
     return 0;
 }
