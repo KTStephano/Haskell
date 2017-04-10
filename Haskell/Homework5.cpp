@@ -93,25 +93,22 @@ auto goldbach = [=](auto n)
 
 auto increasing = [](auto ls)
 {
-	// [(x,y) | x <- zip ls [1..(length ls)], y <- zip ls [1..(length ls), snd y > snd x]]
 	auto len = length( ls );
 	auto zipped = zip( ls, hlsrange( size_t(1), len ) );
-	return concatMap([=](auto x)
+	// and $ map (\x -> if fst (head a) <= fst (head (tail a)) then True else False) $ 
+	//		 [(x,y) | x <- zip ls [1..(length ls)], y <- zip ls [1..(length ls), snd y > snd x]]
+	return and(map( []( auto a )
+	{
+		if ( fst( head( a ) ) <= fst( head( tail( a ) ) ) ) return true;
+		return false;
+	}, concatMap( [=]( auto x )
 	{
 		return map( [=]( auto y ) { return hlist( x, y ); }, filter( [=]( auto pair )
 		{
 			return snd( pair ) > snd( x );
 		}, zipped) );
-	}, zipped );
+	}, zipped ) ) );
 };
-
-// (1,2,3,4)
-// (4,3,2,1)
-// (1,4)(2,3)(3,2)(4,1)
-
-// (1,2,4,3)
-// (3,4,2,1)
-// (1,3)(2,4)(4,2)(3,1)
 
 int main()
 {
@@ -125,6 +122,8 @@ int main()
     show(primes(25));
 	show( goldbach( 6 ) );
 	show( increasing( hlist( "ABBD" ) ) );
+	show( increasing( hlsrange( 10,9,1 ) ) );
+	show( increasing( hlsrange( 1, 10 ) ) );
 
 	while ( 1 )
 		;

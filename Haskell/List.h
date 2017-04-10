@@ -49,7 +49,6 @@ public:
 		T offset = nextInclusive - startInclusive;
 		if ( offset < 0 && startInclusive < endInclusive ) offset *= -1;
 		T curr = startInclusive;
-		std::cout << startInclusive << " " << nextInclusive << " " << endInclusive << " " << offset << " " << curr << std::endl;
 		while (true)
 		{
 			if ( startInclusive < endInclusive && curr > endInclusive ) break;
