@@ -55,11 +55,19 @@ List<T> filter( Lambda pred, const List<T> & list )
 	else return filter( pred, list.tail() );
 }
 
+template<class Lambda, typename T, typename R>
+List<R> __map(Lambda proc, const List<T> & list, const List<R> & acc)
+{
+	if ( list.isNull() ) return acc;
+	return __map( proc, tail( list ), List<R>{proc( list.head() )} +acc );
+}
+
 template<class Lambda, typename T, typename R = typename std::result_of<Lambda( T )>::type>
 List<R> map( Lambda proc, const List<T> & list )
 {
-	if ( list.isNull() ) return List<R>();
-	return List<R>{ proc( list.head() ) } +map( proc, list.tail() );
+	//if ( list.isNull() ) return List<R>();
+	//return List<R>{ proc( list.head() ) } +map( proc, list.tail() );
+	return __map( proc, list, List<R>() );
 }
 
 template<class Lambda, typename T, typename K>
