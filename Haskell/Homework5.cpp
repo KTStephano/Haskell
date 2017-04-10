@@ -91,6 +91,7 @@ auto goldbach = [=](auto n)
 	}, p ) );
 };
 
+// Question 9
 auto increasing = [](auto ls)
 {
 	auto len = length( ls );
@@ -110,6 +111,17 @@ auto increasing = [](auto ls)
 	}, zipped ) ) );
 };
 
+// Question 10
+
+auto select2 = [](auto pred, auto ls0, auto ls1)
+{
+	// [snd x | x <- zip ls0 ls1, pred (fst x) == True]
+	return map( []( auto x )
+	{
+		return snd( x );
+	}, filter( [=]( auto x ) { return pred( fst( x ) ) == true; }, zip( ls0, ls1 ) ) );
+};
+
 int main()
 {
     show(runLengthEncode(hlist (4,2,2,1,1,1,1,4,4,4,4)));
@@ -124,6 +136,9 @@ int main()
 	show( increasing( hlist( "ABBD" ) ) );
 	show( increasing( hlsrange( 10,9,1 ) ) );
 	show( increasing( hlsrange( 1, 10 ) ) );
+	auto even = []( auto x ) { return x % 2 == 0; };
+	show( select2( even, hlsrange( 1, 26 ), hlsrange( 'a', 'z' ) ) );
+	show( select2( []( auto x ) { return x <= 'g'; }, hlsrange( 'a', 'z' ), hlsrange( 1, 26 ) ) );
 
 	while ( 1 )
 		;

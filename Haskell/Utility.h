@@ -59,7 +59,7 @@ template<class Lambda, typename T, typename R>
 List<R> __map(Lambda proc, const List<T> & list, const List<R> & acc)
 {
 	if ( list.isNull() ) return acc;
-	return __map( proc, tail( list ), List<R>{proc( list.head() )} +acc );
+	return __map( proc, tail( list ), acc + List<R>{proc( list.head() )} );
 }
 
 template<class Lambda, typename T, typename R = typename std::result_of<Lambda( T )>::type>
