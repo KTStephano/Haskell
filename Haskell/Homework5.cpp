@@ -46,6 +46,7 @@ auto encipher = [](auto ls0, auto ls1, auto msg)
 
 auto factors = [](auto n)
 {
+    // This uses a list comprehension
    return filter([=](auto pair) { return fst(pair)*snd(pair)==n; },concatMap ([=](auto x)
          {
              return map([=](auto y) { return htuple(x,y);}, hlsrange(1,n));
@@ -54,6 +55,7 @@ auto factors = [](auto n)
 
 auto primes = [](auto n)
 {
+    // This is a list comprehension
     return filter([=](auto z) { return length(factors(z)) == 2; }, hlsrange(1,n));
 };
 
