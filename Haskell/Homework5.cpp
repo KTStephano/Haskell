@@ -50,6 +50,17 @@ auto splitTextHelper(Lambda pred, const String & text, const String & acc)
 
 auto splitText = [](auto pred, auto ls) { return ::splitTextHelper(pred,ls,hlist("")); };
 
+auto splitText2 = [](auto pred, auto ls)
+{
+	auto helper = [pred](const auto & self, auto ls, auto acc)
+	{
+		if ( null( ls ) ) return hlist( acc );
+		if ( pred( head( ls ) ) != true ) return hlist( acc ) + self( self, tail( ls ), hlist( "" ) );
+		return self( self, tail( ls ), acc + hlist( head( ls ) ) );
+	};
+	return helper( helper, ls, hlist( "" ) );
+};
+
 // Question 7
 
 auto encipher = [](auto ls0, auto ls1, auto msg)
@@ -124,17 +135,17 @@ auto select2 = [](auto pred, auto ls0, auto ls1)
 
 int main()
 {
-    show(runLengthEncode(hlist (4,2,2,1,1,1,1,4,4,4,4)));
-    show(runLengthDecode(runLengthEncode(hlist (4,2,2,1,1,1,1,4,4,4,4))));
-    show(splitText ([](auto x) { return x != ' ';}, hlist("This is practice.")));
-    show(2+3);
-    show(hlist("hello")+hlist("george"));
-    show(encipher(hlsrange('A','Z'),hlsrange('a','z'),hlist("THIS")));
-    show(and(hlist(true,true,true,true,true,true,false)));
-    show(primes(25));
+	show( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) );
+	show( runLengthDecode( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) ) );
+	show( splitText2( []( auto x ) { return x != ' '; }, hlist( "This is practice." ) ) );
+	show( 2 + 3 );
+	show( hlist( "hello" ) + hlist( "george" ) );
+	show( encipher( hlsrange( 'A', 'Z' ), hlsrange( 'a', 'z' ), hlist( "THIS" ) ) );
+	show( and ( hlist( true, true, true, true, true, true, false ) ) );
+	show( primes( 25 ) );
 	show( goldbach( 6 ) );
 	show( increasing( hlist( "ABBD" ) ) );
-	show( increasing( hlsrange( 10,9,1 ) ) );
+	show( increasing( hlsrange( 10, 9, 1 ) ) );
 	show( increasing( hlsrange( 1, 10 ) ) );
 	auto even = []( auto x ) { return x % 2 == 0; };
 	show( select2( even, hlsrange( 1, 26 ), hlsrange( 'a', 'z' ) ) );
