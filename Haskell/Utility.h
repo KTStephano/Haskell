@@ -159,9 +159,18 @@ auto identity(const T & item)
 	return [=]( auto a ) { return item; };
 }
 
-// concatMap 
+// concatMap
 template<typename Lambda, typename T>
 auto concatMap(Lambda proc, const List<T> & list)
 {
 	return concat( map( proc, list ) );
+}
+
+// and :: [Bool] -> Bool
+template<typename T = bool>
+auto andf(const List<T> & list)
+{
+	if (null(list)) return true;
+	if (head(list) != true) return false;
+	return andf(tail(list));
 }
