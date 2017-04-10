@@ -95,8 +95,8 @@ auto increasing = [](auto ls)
 {
 	auto len = length( ls );
 	auto zipped = zip( ls, hlsrange( size_t(1), len ) );
-	// and $ map (\x -> if fst (head a) <= fst (head (tail a)) then True else False) $ 
-	//		 [(x,y) | x <- zip ls [1..(length ls)], y <- zip ls [1..(length ls), snd y > snd x]]
+	// and $ map (\x -> if fst (head x) <= fst (head (tail x)) then True else False) $ 
+	//		 [[x,y] | x <- zip ls [1..(length ls)], y <- zip ls [1..(length ls), snd y > snd x]]
 	return and(map( []( auto a )
 	{
 		if ( fst( head( a ) ) <= fst( head( tail( a ) ) ) ) return true;
