@@ -89,7 +89,7 @@ auto primes = [](auto n)
     return filter([=](auto z) { return length(factors(z)) == 2; }, hlsrange(1,n));
 };
 
-auto goldbach = [=](auto n)
+auto goldbach = [](auto n)
 {
 	auto p = ::primes( n );
 	// filter (\pair -> fst pair + snd pair == n) $ concat [(x,y) | x <- p, y <- p]
@@ -109,7 +109,7 @@ auto increasing = [](auto ls)
 	auto zipped = zip( ls, hlsrange( size_t(1), len ) );
 	// and $ map (\x -> if fst (head x) <= fst (head (tail x)) then True else False) $ 
 	//		 [[x,y] | x <- zip ls [1..(length ls)], y <- zip ls [1..(length ls), snd y > snd x]]
-	return and(map( []( auto a )
+	return andf(map( []( auto a )
 	{
 		if ( fst( head( a ) ) <= fst( head( tail( a ) ) ) ) return true;
 		return false;
@@ -135,23 +135,22 @@ auto select2 = [](auto pred, auto ls0, auto ls1)
 
 int main()
 {
+    show(1 or 2 or 3);
 	show( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) );
 	show( runLengthDecode( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) ) );
 	show( splitText2( []( auto x ) { return x != ' '; }, hlist( "This is practice." ) ) );
 	show( 2 + 3 );
 	show( hlist( "hello" ) + hlist( "george" ) );
 	show( encipher( hlsrange( 'A', 'Z' ), hlsrange( 'a', 'z' ), hlist( "THIS" ) ) );
-	show( and ( hlist( true, true, true, true, true, true, false ) ) );
+	show( andf ( hlist( true, true, true, true, true, true, false ) ) );
 	show( primes( 25 ) );
 	show( goldbach( 6 ) );
 	show( increasing( hlist( "ABBD" ) ) );
-	show( increasing( hlsrange( 10, 9, 1 ) ) );
+	show( increasing( hlsrange( 100, 99, 1 ) ) );
 	show( increasing( hlsrange( 1, 10 ) ) );
 	auto even = []( auto x ) { return x % 2 == 0; };
 	show( select2( even, hlsrange( 1, 26 ), hlsrange( 'a', 'z' ) ) );
 	show( select2( []( auto x ) { return x <= 'g'; }, hlsrange( 'a', 'z' ), hlsrange( 1, 26 ) ) );
 
-	while ( 1 )
-		;
     return 0;
 }
