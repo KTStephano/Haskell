@@ -109,17 +109,13 @@ auto increasing = [](auto ls)
 	auto zipped = zip( ls, hlsrange( size_t(1), len ) );
 	// and $ map (\x -> if fst (head x) <= fst (head (tail x)) then True else False) $ 
 	//		 [[x,y] | x <- zip ls [1..(length ls)], y <- zip ls [1..(length ls), snd y > snd x]]
-	return andf(map( []( auto a )
+	return andf( concatMap( [=]( auto x )
 	{
-		if ( fst( head( a ) ) <= fst( head( tail( a ) ) ) ) return true;
-		return false;
-	}, concatMap( [=]( auto x )
-	{
-		return map( [=]( auto y ) { return hlist( x, y ); }, filter( [=]( auto pair )
+		return map( [=]( auto y ) { return fst( x ) <= fst( y ); }, filter( [=]( auto pair )
 		{
 			return snd( pair ) > snd( x );
 		}, zipped) );
-	}, zipped ) ) );
+	}, zipped ) );
 };
 
 // Question 10
