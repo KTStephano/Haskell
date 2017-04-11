@@ -131,7 +131,6 @@ auto select2 = [](auto pred, auto ls0, auto ls1)
 
 int main()
 {
-    show(1 or 2 or 3);
 	show( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) );
 	show( runLengthDecode( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) ) );
 	show( splitText2( []( auto x ) { return x != ' '; }, hlist( "This is practice." ) ) );
