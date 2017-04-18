@@ -107,8 +107,7 @@ auto increasing = [](auto ls)
 {
 	auto len = length( ls );
 	auto zipped = zip( ls, hlsrange( size_t(1), len ) );
-	// and $ map (\x -> if fst (head x) <= fst (head (tail x)) then True else False) $ 
-	//		 [[x,y] | x <- zip ls [1..(length ls)], y <- zip ls [1..(length ls), snd y > snd x]]
+	// and [fst x <= fst y | x <- zip ls [1..(length ls)], y <- zip ls [1..(length ls), snd y > snd x]]
 	return andf( concatMap( [=]( auto x )
 	{
 		return map( [=]( auto y ) { return fst( x ) <= fst( y ); }, filter( [=]( auto pair )
@@ -129,8 +128,59 @@ auto select2 = [](auto pred, auto ls0, auto ls1)
 	}, filter( [=]( auto x ) { return pred( fst( x ) ) == true; }, zip( ls0, ls1 ) ) );
 };
 
+// Question 11
+
+template<typename T>
+auto removeFst(T element, List<T> xs)
+{
+	if (null (xs)) return xs;
+	if (head(xs) == element) return tail(xs);
+	return hlist(head(xs))+removeFst(element,tail(xs));
+}
+
+template<typename T>
+auto combinations1(List<T> xs)
+{
+	return map([](auto x) { return hlist(x); }, xs);
+}
+
+template<typename T>
+auto combinations2(List<T> xs)
+{
+    if (null (xs)) return hlist(xs);
+    auto x = head(xs);
+    return filter([](auto y) { return length(y)==2; },
+                  map([=](auto z) { return hlist(x) + z; }, combinations1(tail(xs))) + combinations2(tail(xs)));
+}
+
+template<typename T>
+auto combinations3(List<T> xs)
+{
+    if (null(xs)) return hlist(xs);
+    auto x = head(xs);
+    return filter([](auto y) {return length(y)==3;},
+                  map([=](auto z) { return hlist(x) + z; }, combinations2(tail(xs))) + combinations3(tail(xs)));
+}
+
+// combinations :: Int -> [t] -> [[t]]
+template<typename T>
+auto combinations(size_t n, List<T> xs)
+{
+    if (n == 0 || null(xs)) return hlist(hlist(""));
+    if (n == 1) return map([](auto x) { return hlist(x); }, xs);
+    auto x = head(xs);
+    return filter([=](auto y) { return length(y) == n; },
+                  map([=](auto z) { return hlist(x) + z; },
+                      combinations(n - 1, tail(xs))) + combinations(n,(tail(xs))));
+}
+
+#define func(name,body) void name() { body }
+
+func(hello,std::cout << "Hello" << std::endl;)
+
 int main()
 {
+    hello();
 	show( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) );
 	show( runLengthDecode( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) ) );
 	show( splitText2( []( auto x ) { return x != ' '; }, hlist( "This is practice." ) ) );
@@ -146,6 +196,12 @@ int main()
 	auto even = []( auto x ) { return x % 2 == 0; };
 	show( select2( even, hlsrange( 1, 26 ), hlsrange( 'a', 'z' ) ) );
 	show( select2( []( auto x ) { return x <= 'g'; }, hlsrange( 'a', 'z' ), hlsrange( 1, 26 ) ) );
+	show(removeFst('A', hlist("ABCDEA")));
+    //show(combinations3(hlist("ABCDE")));
+    show(combinations(3,hlist("ABCDE")));
+    show(encipher(hlsrange('A','Z'),hlsrange('a','z'),hlist("RRRANGE")));
+    show(combinations(3,hlist("ABBD")));
+    show(goldbach(60));
 
     return 0;
 }
