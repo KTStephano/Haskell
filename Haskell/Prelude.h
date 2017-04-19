@@ -3,6 +3,7 @@
 #include <type_traits>
 #include "HList.h"
 #include "HTuple.h"
+#include "Integer.h"
 
 HList<int> hlist();
 

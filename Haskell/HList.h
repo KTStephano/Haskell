@@ -38,7 +38,7 @@ public:
 	// for [x..n]
 	explicit HList(T startInclusive, T endInclusive) : HList()
 	{
-		size_t len = endInclusive - startInclusive + 1;
+		T len = endInclusive - startInclusive + 1;
 		for ( T i = 0; i < len; ++i ) _insertLast( startInclusive + i );
 	}
 

@@ -28,7 +28,7 @@ auto quicksort(const HList<T> & list)
 	return smallerSorted + hlist( x ) + biggerSorted;
 }
 
-auto factorial = []( long long int n ) { return product( hlist( 1LL, n ) ); };
+auto factorial = []( Integer n ) { return product( hlist( Integer(1), n ) ); };
 
 auto even = []( auto i ) { return i % 2 == 0; };
 
@@ -60,7 +60,7 @@ auto numLongChain = []()
     return length(filter(isLong, (map (chain, hlsrange(1,100)))));
 };
 
-int _main1921912992192()
+int _main3333324123125513125125()
 {
 	show( myTakeWhile( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
 	show( mySpan( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
@@ -75,7 +75,7 @@ int _main1921912992192()
 	//show( null( hlist() ) );
 	show( null( hlist( 1, 2, 3 ) ) );
 	show( hlist( "hello", "goodbye", "what" ) );
-	show( factorial(50) );
+	show( "factorial", factorial( 50 ) );
 	show( fst ( htuple( true, hlist("hello") ) ) );
 	show( snd ( htuple( true, hlist("hello") ) ) );
 	show( hlist( 3, 2, 1 ) > hlist( 2, 1, 0 ) );

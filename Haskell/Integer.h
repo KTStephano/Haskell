@@ -17,9 +17,20 @@ class Integer
 	bool _isNegative = false;
 
 public:
-	Integer() : _maxDigits( MAX_DIGITS ), _usedDigits( 0 )
+	Integer() : _maxDigits( MAX_DIGITS ), _usedDigits( 1 )
 	{
 		_integer = new int[_maxDigits]();
+	}
+
+	Integer(const char * num) : Integer()
+	{
+		size_t len = strlen( num );
+		if ( len >= _maxDigits ) throw std::runtime_error( "Integer greater than 2048 digits" );
+		for (int i = len - 1; i >= 0; --i)
+		{
+			_integer[i] = num[i];
+		}
+		_usedDigits = len;
 	}
 
 	Integer(const Integer & other) : Integer()
@@ -53,49 +64,86 @@ public:
 		return out;
 	}
 
-	Integer & operator+( const Integer & other )
+	Integer operator+( const Integer & other ) const
 	{
+		Integer result = Integer( *this );
 		size_t maxIndex = _usedDigits > other._usedDigits ? _usedDigits : other._usedDigits;
-		_usedDigits = maxIndex;
+		result._usedDigits = maxIndex;
 		int carry = 0;
-		for (size_t index = 0; index <= maxIndex, index < _maxDigits; ++index)
+		for (size_t index = 0; index <= maxIndex && index < _maxDigits; ++index)
 		{
-			if ( index == _usedDigits && carry == 1 ) ++_usedDigits;
-			int sum = _integer[index] + other._integer[index] + carry;
+			if ( index == _usedDigits && carry == 1 ) ++result._usedDigits;
+			int sum = result._integer[index] + other._integer[index] + carry;
 			if (sum >= _BASE)
 			{
 				carry = 1;
 				sum -= _BASE; // Something like 8*8 gives 16, so subtracting it by 10 gives us 6
 			}
 			else carry = 0;
-			_integer[index] = sum;
+			result._integer[index] = sum;
 		}
-		return *this;
+		return result;
 	}
 
-	Integer & operator-( const Integer & other )
+	Integer operator-( const Integer & other ) const
 	{
+		Integer result = Integer( *this );
 		for (size_t i = 0; i < other._usedDigits; ++i)
 		{
-			if (_integer[i] < other._integer[i])
+			if ( result._integer[i] < other._integer[i])
 			{
 				for (size_t j = i + 1; j < _usedDigits; ++j)
 				{
-					if ( _integer[j] > 0)
+					if ( result._integer[j] > 0)
 					{
-						_integer[j] -= 1;
+						result._integer[j] -= 1;
 						for ( size_t k = j - 1; k > i; --k )
 						{
-							_integer[k] = 9;
+							result._integer[k] = 9;
 						}
 						break;
 					}
 				}
-				_integer[i] += 10;
+				result._integer[i] += 10;
 			}
-			_integer[i] -= other._integer[i];
+			result._integer[i] -= other._integer[i];
 		}
-		return *this;
+		return result;
+	}
+
+	Integer operator*( const Integer & other ) const
+	{
+		Integer row0;
+		Integer row1;
+		size_t offset = 1;
+		size_t carry = 0;
+
+		row0._usedDigits = _usedDigits;
+		for (size_t i = 0; i <= _usedDigits && i < _maxDigits; ++i)
+		{
+			if ( i == _usedDigits && carry != 0 ) ++row0._usedDigits;
+			row0._integer[i] = _integer[i] * other._integer[0] + carry;
+			carry = row0._integer[i] / 10;
+			row0._integer[i] = row0._integer[i] % _BASE;
+		}
+
+		for (size_t i = 1; i < other._usedDigits; ++i)
+		{
+			row1._usedDigits = offset + _usedDigits - 1;
+			for (size_t j = 0; j <= _usedDigits && j < _maxDigits; ++j )
+			{
+				//if ( j == _usedDigits && carry != 0 ) ++row1._usedDigits;
+				row1._integer[j + offset] = (_integer[j] * other._integer[i]) + carry;
+				carry = row1._integer[j + offset] / 10;
+				row1._integer[j + offset] = row1._integer[j + offset] % _BASE;
+			}
+			row0 = row0 + row1;
+			++offset;
+			row1._zero();
+		}
+
+		if ( ( _isNegative && !other._isNegative ) || ( !_isNegative && other._isNegative ) ) row0._isNegative = true;
+		return row0;
 	}
 
 	Integer & operator++()
@@ -163,6 +211,20 @@ public:
 	}
 
 private:
+	/** Privately-overloaded operators */
+	Integer & operator=( const Integer & other )
+	{
+		_deepCopy( other );
+		return *this;
+	}
+
+	Integer & operator=( Integer & other )
+	{
+		_shallowCopy( other );
+		return *this;
+	}
+
+private:
 	void _setToInteger(int i)
 	{
 		size_t index = 0;
@@ -179,14 +241,14 @@ private:
 			++index;
 			i = i / _BASE;
 		}
-		_usedDigits = index;
+		_usedDigits = index == 0 ? 1 : index;
 	}
 
 	void _deepCopy(const Integer & other)
 	{
 		_usedDigits = other._usedDigits;
 		_isNegative = other._isNegative;
-		for (size_t i = 0; i < _usedDigits; ++i)
+		for (size_t i = 0; i < _maxDigits; ++i)
 		{
 			_integer[i] = other._integer[i];
 		}
@@ -194,10 +256,16 @@ private:
 
 	void _shallowCopy(Integer & other)
 	{
-		delete _integer;
+		//delete _integer;
 		_usedDigits = other._usedDigits;
 		_isNegative = other._isNegative;
 		_integer = other._integer;
 		other._integer = nullptr;
+	}
+
+	void _zero()
+	{
+		for ( int i = 0; i < _maxDigits; ++i ) _integer[i] = 0;
+		_usedDigits = 1;
 	}
 };
