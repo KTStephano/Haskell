@@ -25,10 +25,11 @@ public:
 	Integer(const char * num) : Integer()
 	{
 		size_t len = strlen( num );
+		std::cout << len << std::endl;
 		if ( len >= _maxDigits ) throw std::runtime_error( "Integer greater than 2048 digits" );
 		for (int i = len - 1; i >= 0; --i)
 		{
-			_integer[i] = num[i];
+			_integer[i] = _toInt( num[len - i - 1] );
 		}
 		_usedDigits = len;
 	}
@@ -129,7 +130,7 @@ public:
 
 		for (size_t i = 1; i < other._usedDigits; ++i)
 		{
-			row1._usedDigits = offset + _usedDigits - 1;
+			row1._usedDigits = offset + _usedDigits;
 			for (size_t j = 0; j <= _usedDigits && j < _maxDigits; ++j )
 			{
 				//if ( j == _usedDigits && carry != 0 ) ++row1._usedDigits;
@@ -142,6 +143,7 @@ public:
 			row1._zero();
 		}
 
+		row0._usedDigits = 200;
 		if ( ( _isNegative && !other._isNegative ) || ( !_isNegative && other._isNegative ) ) row0._isNegative = true;
 		return row0;
 	}
@@ -267,5 +269,10 @@ private:
 	{
 		for ( int i = 0; i < _maxDigits; ++i ) _integer[i] = 0;
 		_usedDigits = 1;
+	}
+
+	static int _toInt(char c)
+	{
+		return c - '0';
 	}
 };

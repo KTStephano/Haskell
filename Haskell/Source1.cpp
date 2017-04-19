@@ -25,6 +25,7 @@ int main()
 	show( Integer( 500 ) - Integer( 499 ) );
 	show( Integer( -16 ) * -16 );
 	show( Integer(500)*Integer(500) );
+	show( Integer( "18446744073709551615" ) * Integer( "18446744073709551615" ) );
 
 	while ( 1 )
 		;
