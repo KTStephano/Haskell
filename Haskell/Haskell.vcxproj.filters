@@ -27,6 +27,9 @@
     <ClInclude Include="HTuple.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Integer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
