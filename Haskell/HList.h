@@ -6,7 +6,7 @@
 #include <math.h>
 
 template<typename T>
-class List
+class HList
 {
 	typedef struct _Data
 	{
@@ -28,22 +28,22 @@ class List
 public:
 	typedef T value_type;
 
-	explicit List() : _length( 0 ) {  }
+	explicit HList() : _length( 0 ) {  }
 
-	explicit List( const std::initializer_list<T> & list ) : List()
+	explicit HList( const std::initializer_list<T> & list ) : HList()
 	{
 		for ( const T & element : list ) _insertLast( element );
 	}
 
 	// for [x..n]
-	explicit List(T startInclusive, T endInclusive) : List()
+	explicit HList(T startInclusive, T endInclusive) : HList()
 	{
 		size_t len = endInclusive - startInclusive + 1;
 		for ( T i = 0; i < len; ++i ) _insertLast( startInclusive + i );
 	}
 
 	// for [x,y..n]
-	explicit List(T startInclusive, T nextInclusive, T endInclusive) : List()
+	explicit HList(T startInclusive, T nextInclusive, T endInclusive) : HList()
 	{
 		if ( nextInclusive < 0 ) return; // Leave as empty list (Haskell does this too)
 		T offset = nextInclusive - startInclusive;
@@ -58,39 +58,44 @@ public:
 		}
 	}
 
-	List(const List & list) : List()
+	HList(const HList & list) : HList()
 	{
 		_shallowCopy( list ); // Shallow copy is intentional
 	}
 
-	List(List && list) : List()
+	HList(HList && list) : HList()
 	{
 		_shallowCopy( list );
 	}
 
-	explicit List(const List & list0, const List & list1) : List()
+	explicit HList(const HList & list0, const HList & list1) : HList()
 	{
 		_copyTwoLs( list0, list1 );
 	}
 
-	explicit List(const List & list, const T & newItem) : List()
+	explicit HList(const HList & list, const T & newItem) : HList()
 	{
 		_copyLsItem( list, newItem );
 	}
 
-	explicit List(const T & newItem, const List & list) : List()
+	explicit HList(const T & newItem, const HList & list) : HList()
 	{
 		_copyItemLs( newItem, list );
 	}
 
-	explicit List(const List & list, size_t startInclusive, size_t endExclusive) : List()
+	explicit HList(const HList & list, size_t startInclusive, size_t endExclusive) : HList()
 	{
 		_shallowCopy( list, startInclusive, endExclusive );
 	}
 
-	List<T> getNullVariant() const
+	virtual ~HList()
 	{
-		return List<T>();
+		_length = 0;
+	}
+
+	HList<T> getNullVariant() const
+	{
+		return HList<T>();
 	}
 
 	bool isNull() const
@@ -124,36 +129,36 @@ public:
 		return ( *this )[_length - 1];
 	}
 
-	List tail() const
+	HList tail() const
 	{
 		if ( _length == 0 ) throw std::out_of_range( "Attempting to access null tail position" );
-		return List( *this, 1, _length );
+		return HList( *this, 1, _length );
 	}
 
 	/**
 	  * Returns everything except the last element
 	  */
-	List init() const
+	HList init() const
 	{
 		if ( _length == 0 ) throw std::out_of_range( "Attempting to call init on the empty list" );
-		return List( *this, 0, _length - 1 );
+		return HList( *this, 0, _length - 1 );
 	}
 
-	List reverse() const
+	HList reverse() const
 	{
 		return _reverse( *this );
 	}
 
-	List take(size_t numElements) const
+	HList take(size_t numElements) const
 	{
 		if ( numElements > _length ) return *this;
-		return List( *this, 0, numElements );
+		return HList( *this, 0, numElements );
 	}
 
-	List drop(size_t numElements) const
+	HList drop(size_t numElements) const
 	{
-		if ( numElements > _length ) return List();
-		return List( *this, numElements, _length );
+		if ( numElements > _length ) return HList();
+		return HList( *this, numElements, _length );
 	}
 
 	/** Overloaded operators */
@@ -172,17 +177,30 @@ public:
 		return *( ret->item );
 	}
 
-	List operator+( const T & item ) const
+	HList operator+( const T & item ) const
 	{
-		return List( *this, item );
+		return HList( *this, item );
 	}
 
-	List operator+( const List & other ) const
+	// This should only be used for appending the empty list
+	template<typename K>
+	HList operator+( const HList<K> & other ) const
 	{
-		return List( *this, other );
+		if ( other.length() != 0 ) throw std::runtime_error( "Can not append lists of different type which are not the empty list" );
+		return HList( *this );
 	}
 
-	bool operator>( const List & other ) const
+	HList operator+( const HList & other ) const
+	{
+		return HList( *this, other );
+	}
+
+	friend HList<T> operator+( const T & item, const HList<T> & list )
+	{
+		return HList<T>( item, list );
+	}
+
+	bool operator>( const HList & other ) const
 	{
 		bool isGreater = length() > other.length();
 		std::size_t indices = isGreater ? other.length() : length();
@@ -202,23 +220,23 @@ public:
 		return isGreater;
 	}
 
-	bool operator<( const List & other ) const
+	bool operator<( const HList & other ) const
 	{
 		return other > *this;
 	}
 
-	bool operator>=( const List & other ) const
+	bool operator>=( const HList & other ) const
 	{
 		bool equal = *this == other;
 		return equal ? true : *this > other;
 	}
 
-	bool operator<=( const List & other ) const
+	bool operator<=( const HList & other ) const
 	{
 		return other >= *this;
 	}
 
-	bool operator==( const List & other ) const
+	bool operator==( const HList & other ) const
 	{
 		if ( _length != other._length ) return false;
 		std::shared_ptr<_Data> currThis = _list;
@@ -232,7 +250,14 @@ public:
 		return true;
 	}
 
-	friend std::ostream & operator<<( std::ostream & out, const List & list )
+	template<typename K>
+	bool operator==( const HList<K> & other ) const
+	{
+		if ( _length == 0 && other.length() == 0 ) return true;
+		return false;
+	}
+
+	friend std::ostream & operator<<( std::ostream & out, const HList & list )
 	{
 		std::string begin = "[";
 		std::string end = "]";
@@ -280,7 +305,7 @@ private:
 		++_length;
 	}
 
-	void _deepCopy(const List & other)
+	void _deepCopy(const HList & other)
 	{
 		std::shared_ptr<_Data> curr = other._list;
 		for ( size_t i = 0; i < other._length; ++i )
@@ -290,14 +315,14 @@ private:
 		}
 	}
 
-	void _shallowCopy(const List & other)
+	void _shallowCopy(const HList & other)
 	{
 		_list = other._list;
 		_last = other._last;
 		_length = other._length;
 	}
 
-	void _shallowCopy(const List & other, size_t startInclusive, size_t endExclusive)
+	void _shallowCopy(const HList & other, size_t startInclusive, size_t endExclusive)
 	{
 		if ( startInclusive == 0 && endExclusive == other._length )
 		{
@@ -323,7 +348,7 @@ private:
 		}
 	}
 
-	void _copyTwoLs(const List & list0, const List & list1)
+	void _copyTwoLs(const HList & list0, const HList & list1)
 	{
 		_deepCopy( list0 );
 		if (list0._length == 0)
@@ -339,13 +364,13 @@ private:
 		_length += list1._length;
 	}
 
-	void _copyLsItem(const List & list, const T & item)
+	void _copyLsItem(const HList & list, const T & item)
 	{
 		_deepCopy( list );
 		_insertLast( item );
 	}
 
-	void _copyItemLs(const T & item, const List & list)
+	void _copyItemLs(const T & item, const HList & list)
 	{
 		_insertLast( item );
 		_list->next = list._list;
@@ -358,66 +383,66 @@ private:
 		return index >= 0 && index < _length;
 	}
 
-	static List _reverse(const List & list)
+	static HList _reverse(const HList & list)
 	{
-		if ( list.isNull() ) return List();
-		if ( list.length() == 1 ) return List{ list.head() };
-		return _reverse( list.tail() ) + List{ list.head() };
+		if ( list.isNull() ) return HList();
+		if ( list.length() == 1 ) return HList{ list.head() };
+		return _reverse( list.tail() ) + HList{ list.head() };
 	}
 };
 
-typedef List<char> String;
+typedef HList<char> String;
 
 template<typename T>
-bool null( const List<T> & list )
+bool null( const HList<T> & list )
 {
 	return list.isNull();
 }
 
 template<typename T>
-auto head( const List<T> & list )
+auto head( const HList<T> & list )
 {
 	return list.head();
 }
 
 template<typename T>
-auto tail( const List<T> & list )
+auto tail( const HList<T> & list )
 {
 	return list.tail();
 }
 
 template<typename T>
-auto last( const List<T> & list )
+auto last( const HList<T> & list )
 {
 	return list.last();
 }
 
 template<typename T>
-auto init( const List<T> & list )
+auto init( const HList<T> & list )
 {
 	return list.init();
 }
 
 template<typename T>
-auto length( const List<T> & list )
+auto length( const HList<T> & list )
 {
 	return list.length();
 }
 
 template<typename T>
-auto take( std::size_t num, const List<T> & list )
+auto take( std::size_t num, const HList<T> & list )
 {
 	return list.take( num );
 }
 
 template<typename T>
-auto drop( std::size_t num, const List<T> & list )
+auto drop( std::size_t num, const HList<T> & list )
 {
 	return list.drop( num );
 }
 
 template<typename T>
-auto _minimum( const List<T> & list, const T & min )
+auto _minimum( const HList<T> & list, const T & min )
 {
 	if ( null( list ) ) return min;
 	else if ( head( list ) < min ) return _minimum( tail( list ), head( list ) );
@@ -425,13 +450,13 @@ auto _minimum( const List<T> & list, const T & min )
 }
 
 template<typename T>
-auto minimum( const List<T> & list )
+auto minimum( const HList<T> & list )
 {
 	return _minimum( tail( list ), head( list ) );
 }
 
 template<typename T>
-auto _maximum( const List<T> & list, const T & max )
+auto _maximum( const HList<T> & list, const T & max )
 {
 	if ( null( list ) ) return max;
 	else if ( head( list ) > max ) return _maximum( tail( list ), head( list ) );
@@ -439,39 +464,40 @@ auto _maximum( const List<T> & list, const T & max )
 }
 
 template<typename T>
-auto maximum( const List<T> & list )
+auto maximum( const HList<T> & list )
 {
 	return _maximum( tail( list ), head( list ) );
 }
 
 template<typename T>
-auto sum( const List<T> & list, const T & acc = T() )
+auto sum( const HList<T> & list, const T & acc = T() )
 {
 	if ( null( list ) ) return acc;
 	return sum( tail( list ), acc + head( list ) );
 }
 
 template<typename T>
-auto product( const List<T> & list, const T & acc = 1 )
+auto product( const HList<T> & list, const T & acc = 1 )
 {
 	if ( null( list ) ) return acc;
 	return product( tail( list ), acc * head( list ) );
 }
 
 template<typename T>
-auto elem( const T & item, const List<T> & list )
+auto elem( const T & item, const HList<T> & list )
 {
 	return list.contains( item );
 }
 
 template<typename T>
-auto reverse( const List<T> & list )
+auto reverse( const HList<T> & list )
 {
 	return list.reverse();
 }
 
 template<typename T>
-auto empty( const List<T> & list )
+auto empty( const HList<T> & list )
 {
 	return list.getNullVariant();
 }
+

@@ -1,7 +1,8 @@
-#include "Utility.h"
+#include "Prelude.h"
+#include <map>
 
 template<typename T>
-auto permutations( const List<T> & xs )
+auto permutations( const HList<T> & xs )
 {
 	if ( null( xs ) ) return hlist( xs );
 
@@ -21,7 +22,7 @@ auto permutations( const List<T> & xs )
 
 // Question 4
 template<typename T>
-auto runLengthEncodeHelper(const T & curr, const List<T> & list, int acc)
+auto runLengthEncodeHelper(const T & curr, const HList<T> & list, int acc)
 {
     if (null(list)) return hlist(htuple(curr, acc + 1));
     if (head(list) != curr) return hlist(htuple(curr, acc + 1)) + runLengthEncodeHelper(head(list),tail(list),0);
@@ -131,7 +132,7 @@ auto select2 = [](auto pred, auto ls0, auto ls1)
 // Question 11
 
 template<typename T>
-auto removeFst(T element, List<T> xs)
+auto removeFst(T element, HList<T> xs)
 {
 	if (null (xs)) return xs;
 	if (head(xs) == element) return tail(xs);
@@ -139,13 +140,13 @@ auto removeFst(T element, List<T> xs)
 }
 
 template<typename T>
-auto combinations1(List<T> xs)
+auto combinations1(HList<T> xs)
 {
 	return map([](auto x) { return hlist(x); }, xs);
 }
 
 template<typename T>
-auto combinations2(List<T> xs)
+auto combinations2(HList<T> xs)
 {
     if (null (xs)) return hlist(xs);
     auto x = head(xs);
@@ -154,7 +155,7 @@ auto combinations2(List<T> xs)
 }
 
 template<typename T>
-auto combinations3(List<T> xs)
+auto combinations3(HList<T> xs)
 {
     if (null(xs)) return hlist(xs);
     auto x = head(xs);
@@ -164,7 +165,7 @@ auto combinations3(List<T> xs)
 
 // combinations :: Int -> [t] -> [[t]]
 template<typename T>
-auto combinations(size_t n, List<T> xs)
+auto combinations(size_t n, HList<T> xs)
 {
     if (n == 0 || null(xs)) return hlist(hlist(""));
     if (n == 1) return map([](auto x) { return hlist(x); }, xs);
@@ -174,13 +175,22 @@ auto combinations(size_t n, List<T> xs)
                       combinations(n - 1, tail(xs))) + combinations(n,(tail(xs))));
 }
 
-#define func(name,body) void name() { body }
+#define FUNCTION_CALL(F,...) F(__VA_ARGS__)
 
-func(hello,std::cout << "Hello" << std::endl;)
+void p() { std::cout << "P was called\n"; }
 
-int main()
+int _main1212212112()
 {
-    hello();
+	auto lambda = []( auto a ) { return a; };
+	//show( htuple( 1, 2, 3 ) > htuple( 1, 2, 3 ) );
+	auto tup = htuple( 1, 2, 3 );
+	for ( size_t i = 0; i < tup.length(); ++i )
+	{
+		const size_t index = i;
+		show( get<1>( tup ) );
+	}
+	show( HList<std::string>() == HList<int>() );
+	show( hlist( 1, 2, 3 ) == hlist( "hello" ) );
 	show( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) );
 	show( runLengthDecode( runLengthEncode( hlist( 4, 2, 2, 1, 1, 1, 1, 4, 4, 4, 4 ) ) ) );
 	show( splitText2( []( auto x ) { return x != ' '; }, hlist( "This is practice." ) ) );
@@ -197,11 +207,14 @@ int main()
 	show( select2( even, hlsrange( 1, 26 ), hlsrange( 'a', 'z' ) ) );
 	show( select2( []( auto x ) { return x <= 'g'; }, hlsrange( 'a', 'z' ), hlsrange( 1, 26 ) ) );
 	show(removeFst('A', hlist("ABCDEA")));
-    //show(combinations3(hlist("ABCDE")));
+    show(combinations3(hlist("ABCDE")));
     show(combinations(3,hlist("ABCDE")));
     show(encipher(hlsrange('A','Z'),hlsrange('a','z'),hlist("RRRANGE")));
     show(combinations(3,hlist("ABBD")));
     show(goldbach(60));
+
+	while ( 1 )
+		;
 
     return 0;
 }

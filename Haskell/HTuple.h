@@ -124,37 +124,37 @@ protected:
 };
 
 template<typename ... Types>
-class Tuple : public _TupleImpl<0, Types...>
+class HTuple : public _TupleImpl<0, Types...>
 {
 	typedef _TupleImpl<0, Types...> _Inherited;
 	std::size_t _length;
 
 public:
-	Tuple() : _Inherited(), _length( 0 )
+	HTuple() : _Inherited(), _length( 0 )
 	{
 	}
 
-	explicit Tuple( const Types & ... elements ) : _Inherited( elements... ),
+	explicit HTuple( const Types & ... elements ) : _Inherited( elements... ),
 		_length( sizeof...( elements ) )
 	{
 	}
 
-	explicit Tuple( Types && ... elements ) : _Inherited( std::forward<Types>( elements )... ),
+	explicit HTuple( Types && ... elements ) : _Inherited( std::forward<Types>( elements )... ),
 		_length( sizeof...( elements ) )
 	{
 	}
 
-	Tuple( const Tuple & other ) : _Inherited( static_cast<const _Inherited &>( other ) ),
+	HTuple( const HTuple & other ) : _Inherited( static_cast<const _Inherited &>( other ) ),
 		_length( other._length )
 	{
 	}
 
-	Tuple( Tuple && other ) : _Inherited( static_cast<_Inherited &&>( other ) ),
+	HTuple( HTuple && other ) : _Inherited( static_cast<_Inherited &&>( other ) ),
 		_length( other._length )
 	{
 	}
 
-	virtual ~Tuple() { }
+	virtual ~HTuple() { }
 
 	std::size_t length() const
 	{
@@ -162,7 +162,7 @@ public:
 	}
 
 	/** Overloaded operators */
-	friend std::ostream & operator<<( std::ostream & out, const Tuple & tuple )
+	friend std::ostream & operator<<( std::ostream & out, const HTuple & tuple )
 	{
 		std::string beginEnd;
 		std::string delim;
@@ -184,13 +184,13 @@ template<std::size_t Index, typename T>
 struct TupleElementType;
 
 template<std::size_t Index, typename Head, typename ... Tail>
-struct TupleElementType<Index, Tuple<Head, Tail...>> : TupleElementType<Index - 1, Tuple<Tail...>>
+struct TupleElementType<Index, HTuple<Head, Tail...>> : TupleElementType<Index - 1, HTuple<Tail...>>
 {
 };
 
 // Base case
 template<typename Head, typename ... Tail>
-struct TupleElementType<0, Tuple<Head, Tail...>>
+struct TupleElementType<0, HTuple<Head, Tail...>>
 {
 	typedef Head type;
 };
@@ -202,20 +202,59 @@ inline const Head & _getHelper( const _TupleImpl<Index, Head, Tail...> & tuple )
 }
 
 template<std::size_t Index, typename ... Elements>
-inline const typename TupleElementType<Index, Tuple<Elements...>>::type & get( const Tuple<Elements...> & tuple )
+inline const typename TupleElementType<Index, HTuple<Elements...>>::type & get( const HTuple<Elements...> & tuple )
 {
 	if ( Index < 0 || Index >= tuple.length() ) throw std::out_of_range( "Tuple: index out of range" );
 	return _getHelper<Index>( tuple );
 }
 
+template<typename ... Elements>
+bool operator==( const HTuple<Elements...> & tuple0, const HTuple<Elements...> & tuple1 )
+{
+	if ( tuple0.length() != tuple1.length() ) return false;
+	for (size_t i = 0; i < tuple0.length(); ++i)
+	{
+		if ( get<i>( tuple0 ) != get<i>( tuple1 ) ) return false;
+	}
+	return true;
+}
+
+template<typename ... Elements>
+bool operator>( const HTuple<Elements...> & tuple0, const HTuple<Elements...> & tuple1 )
+{
+	for (size_t i = 0; i < tuple0.length(); ++i)
+	{
+		if ( get<i>( tuple0 ) > get<i>( tuple1 ) ) return true;
+	}
+	return false;
+}
+
+template<typename ... Elements>
+bool operator>=( const HTuple<Elements...> & tuple0, const HTuple<Elements...> & tuple1 )
+{
+	return tuple0 > tuple1 || tuple0 == tuple1;
+}
+
+template<typename ... Elements>
+bool operator<( const HTuple<Elements...> & tuple0, const HTuple<Elements...> & tuple1 )
+{
+	return !( tuple0 > tuple1 );
+}
+
+template<typename ... Elements>
+bool operator<=( const HTuple<Elements...> & tuple0, const HTuple<Elements...> & tuple1 )
+{
+	return tuple0 < tuple1 || tuple0 == tuple1;
+}
+
 template<typename T, typename K>
-auto fst( const Tuple<T, K> & tuple)
+auto fst( const HTuple<T, K> & tuple)
 {
 	return get<0>( tuple );
 }
 
 template<typename T, typename K>
-auto snd( const Tuple<T, K> & tuple )
+auto snd( const HTuple<T, K> & tuple )
 {
 	return get<1>( tuple );
 }

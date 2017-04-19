@@ -1,11 +1,9 @@
 #include <iostream>
 #include <cmath>
-#include "Tuple.h"
-#include "List.h"
-#include "Utility.h"
+#include "Prelude.h"
 
 template<typename Lambda, typename T>
-auto myTakeWhile( Lambda pred, const List<T> & input, const List<T> & acc = List<T>() )
+auto myTakeWhile( Lambda pred, const HList<T> & input, const HList<T> & acc = HList<T>() )
 {
 	if ( null( input ) ) return reverse( acc );
 	else if ( pred( head( input ) ) == false ) return reverse( acc );
@@ -13,17 +11,17 @@ auto myTakeWhile( Lambda pred, const List<T> & input, const List<T> & acc = List
 };
 
 template<typename Lambda, typename T>
-auto mySpan( Lambda pred, const List<T> & input, const List<T> & acc = List<T>() )
+auto mySpan( Lambda pred, const HList<T> & input, const HList<T> & acc = HList<T>() )
 {
-	if ( null( input ) ) return htuple( reverse( acc ), List<T>() );
+	if ( null( input ) ) return htuple( reverse( acc ), HList<T>() );
 	else if ( pred( input.head() ) == false ) return htuple( reverse( acc ), input );
 	return mySpan( pred, tail( input ), hlist( head( input ) ) + acc );
 };
 
 template<typename T>
-auto quicksort(const List<T> & list)
+auto quicksort(const HList<T> & list)
 {
-	if ( null( list ) ) return List<T>();
+	if ( null( list ) ) return HList<T>();
 	auto x = head( list );
 	auto smallerSorted = quicksort( filter( [&x]( auto a ) { return a <= x; }, tail( list ) ) );
 	auto biggerSorted = quicksort( filter( [&x]( auto a ) { return a > x; }, tail( list ) ) );
@@ -62,7 +60,7 @@ auto numLongChain = []()
     return length(filter(isLong, (map (chain, hlsrange(1,100)))));
 };
 
-int _main1234()
+int _main1921912992192()
 {
 	show( myTakeWhile( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
 	show( mySpan( []( char i ) { return i != ' '; }, hlist( "this is Practice." ) ) );
