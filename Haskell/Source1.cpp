@@ -43,8 +43,5 @@ int main()
     show( add1n( 1, 300 ) );
 	show( Integer()*-1 );
 
-	while ( 1 )
-		;
-
 	return 0;
 }

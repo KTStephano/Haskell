@@ -66,6 +66,7 @@ public:
 
 	Integer operator+( const Integer & other ) const
     {
+        //std::cout << "Plus " << *this << " " << other << std::endl;
 		Integer result = Integer( *this );
 		// -x + y
         if (_isNegative && !other._isNegative)
@@ -291,6 +292,7 @@ private:
 	{
 		_usedDigits = other._usedDigits;
 		_isNegative = other._isNegative;
+        _maxDigits = other._maxDigits;
 		for (size_t i = 0; i < _maxDigits; ++i)
 		{
 			_integer[i] = other._integer[i];
@@ -303,6 +305,7 @@ private:
 		_usedDigits = other._usedDigits;
 		_isNegative = other._isNegative;
 		_integer = other._integer;
+        _maxDigits = other._maxDigits;
 		other._integer = nullptr;
 	}
 
