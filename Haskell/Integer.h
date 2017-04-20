@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <stdexcept>
 
 #define MAX_DIGITS 2048
 
@@ -190,6 +191,16 @@ public:
 		return row0;
 	}
 
+	Integer operator/( const Integer & other ) const
+	{
+		Integer numerator = Integer( *this );
+		Integer denominator = Integer( other );
+		Integer quotient = Integer();
+		Integer remainder = Integer();
+		_divide( numerator, denominator, quotient, remainder );
+		return quotient;
+	}
+
 	Integer & operator++()
 	{
 		size_t index = 0;
@@ -327,6 +338,35 @@ private:
 			}
 		}
 		_usedDigits = 1;
+	}
+
+	// See https://en.wikipedia.org/wiki/Division_algorithm
+	void _divide(const Integer & numerator, const Integer & denominator, Integer & quotient, Integer & remainder) const
+	{
+		if ( denominator == 0 ) throw std::invalid_argument( "Division by zero error" );
+		if (denominator < 0)
+		{
+			_divide( numerator, denominator * -1, quotient, remainder );
+			quotient = quotient * -1;
+		}
+		if (numerator < 0)
+		{
+			_divide( numerator * -1, denominator, quotient, remainder );
+			if ( remainder == 0 ) quotient = quotient * -1;
+			else
+			{
+				quotient = quotient * -1 - 1;
+				remainder = denominator - remainder;
+			}
+		}
+
+		quotient = 0;
+		remainder = numerator;
+		while (remainder >= denominator)
+		{
+			++quotient;
+			remainder = remainder - denominator;
+		}
 	}
 
 	static int _toInt(char c)

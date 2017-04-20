@@ -39,9 +39,14 @@ int main()
     show(Integer(-2)+Integer(2));
 	show( Integer(2)*Integer(3)*Integer(4)*Integer(5)*Integer(6)*Integer(7)*Integer(8)*Integer(9)*Integer(10) );
 	show( Integer( 5 ) * Integer( 24 ) );
-	show( fact( 50 ) );
+	show( fact( 300 ) );
     show( add1n( 1, 300 ) );
 	show( Integer()*-1 );
+	show( Integer( 2 ) / 2 );
+	show( Integer( "18446744073709551615" ) * Integer( "18446744073709551615" ) * Integer( "18446744073709551615" ) - Integer( "18446744073709551615" ) );
+
+	while ( 1 )
+		;
 
 	return 0;
 }
