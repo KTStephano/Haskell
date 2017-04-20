@@ -23,11 +23,19 @@ int main()
 	show( Integer( 200010 ) );
 	show( Integer( 2 ) + Integer( 2 ) );
 	show( Integer( 500 ) - Integer( 499 ) );
-	show( Integer( -16 ) * -16 );
+	show( Integer( 16 ) * Integer(16) );
+    show( Integer(24) * Integer(25));
 	show( Integer(500)*Integer(500) );
 	show( Integer( "18446744073709551615" ) * Integer( "18446744073709551615" ) );
+    show( Integer( "1844674407370" ) + Integer( "18446744073709551615" ));
+    show(Integer(16) + Integer(16));
+    show(Integer(96) + Integer(160));
+    show(Integer(-32) - Integer(-32));
+    show(Integer(3)-Integer(5));
+    show(Integer(-15)-Integer(-5));
+    show(Integer(-5)-Integer(-15));
+    show(Integer(-500)-Integer(700));
+    show(Integer(-2)+Integer(2));
 
-	while ( 1 )
-		;
 	return 0;
 }

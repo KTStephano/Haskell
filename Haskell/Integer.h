@@ -25,7 +25,6 @@ public:
 	Integer(const char * num) : Integer()
 	{
 		size_t len = strlen( num );
-		std::cout << len << std::endl;
 		if ( len >= _maxDigits ) throw std::runtime_error( "Integer greater than 2048 digits" );
 		for (int i = len - 1; i >= 0; --i)
 		{
@@ -66,14 +65,18 @@ public:
 	}
 
 	Integer operator+( const Integer & other ) const
-	{
+    {
 		Integer result = Integer( *this );
+        if (_isNegative && !other._isNegative)
+        {
+            return other - result * -1;
+        }
 		size_t maxIndex = _usedDigits > other._usedDigits ? _usedDigits : other._usedDigits;
 		result._usedDigits = maxIndex;
 		int carry = 0;
 		for (size_t index = 0; index <= maxIndex && index < _maxDigits; ++index)
 		{
-			if ( index == _usedDigits && carry == 1 ) ++result._usedDigits;
+			if ( index == maxIndex && carry == 1 ) ++result._usedDigits;
 			int sum = result._integer[index] + other._integer[index] + carry;
 			if (sum >= _BASE)
 			{
@@ -89,6 +92,26 @@ public:
 	Integer operator-( const Integer & other ) const
 	{
 		Integer result = Integer( *this );
+        // -x-y
+        if (_isNegative && !other._isNegative)
+        {
+            result = (result * -1) + (other * -1);
+            return result * -1;
+        }
+        // x-(-y) => x+y
+        if (!_isNegative && other._isNegative) return result + other * -1;
+        // -x-(-y) => -x+y => y-x
+        if (_isNegative && other._isNegative)
+        {
+            return other * -1 - result * -1;
+        }
+        // x - y, x < y
+        if (result < other)
+        {
+            result = other - result;
+            return result * -1;
+        }
+
 		for (size_t i = 0; i < other._usedDigits; ++i)
 		{
 			if ( result._integer[i] < other._integer[i])
@@ -116,13 +139,14 @@ public:
 	{
 		Integer row0;
 		Integer row1;
-		size_t offset = 1;
-		size_t carry = 0;
+		int offset = 1;
+		int carry = 0;
 
 		row0._usedDigits = _usedDigits;
 		for (size_t i = 0; i <= _usedDigits && i < _maxDigits; ++i)
 		{
 			if ( i == _usedDigits && carry != 0 ) ++row0._usedDigits;
+            //else if (i < _usedDigits) ++row0._usedDigits;
 			row0._integer[i] = _integer[i] * other._integer[0] + carry;
 			carry = row0._integer[i] / 10;
 			row0._integer[i] = row0._integer[i] % _BASE;
@@ -130,10 +154,11 @@ public:
 
 		for (size_t i = 1; i < other._usedDigits; ++i)
 		{
-			row1._usedDigits = offset + _usedDigits;
+			row1._usedDigits = offset + (_usedDigits > other._usedDigits ? _usedDigits : other._usedDigits);
 			for (size_t j = 0; j <= _usedDigits && j < _maxDigits; ++j )
 			{
-				//if ( j == _usedDigits && carry != 0 ) ++row1._usedDigits;
+				if ( j == _usedDigits && carry != 0 ) ++row1._usedDigits;
+                //else if (j < _usedDigits) ++row1._usedDigits;
 				row1._integer[j + offset] = (_integer[j] * other._integer[i]) + carry;
 				carry = row1._integer[j + offset] / 10;
 				row1._integer[j + offset] = row1._integer[j + offset] % _BASE;
@@ -143,7 +168,7 @@ public:
 			row1._zero();
 		}
 
-		row0._usedDigits = 200;
+		//row0._usedDigits = 200;
 		if ( ( _isNegative && !other._isNegative ) || ( !_isNegative && other._isNegative ) ) row0._isNegative = true;
 		return row0;
 	}
