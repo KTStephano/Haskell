@@ -67,10 +67,16 @@ public:
 	Integer operator+( const Integer & other ) const
     {
 		Integer result = Integer( *this );
+		// -x + y
         if (_isNegative && !other._isNegative)
         {
             return other - result * -1;
         }
+		// x + -y
+		if (!_isNegative && other._isNegative)
+		{
+			return result - other * -1;
+		}
 		size_t maxIndex = _usedDigits > other._usedDigits ? _usedDigits : other._usedDigits;
 		result._usedDigits = maxIndex;
 		int carry = 0;
@@ -132,6 +138,8 @@ public:
 			}
 			result._integer[i] -= other._integer[i];
 		}
+
+		result._calculateUsedDigits();
 		return result;
 	}
 
@@ -293,6 +301,19 @@ private:
 	void _zero()
 	{
 		for ( int i = 0; i < _maxDigits; ++i ) _integer[i] = 0;
+		_usedDigits = 1;
+	}
+
+	void _calculateUsedDigits()
+	{
+		for (int i = _maxDigits - 1; i >= 0; --i)
+		{
+			if (_integer[i] > 0)
+			{
+				_usedDigits = i + 1;
+				return;
+			}
+		}
 		_usedDigits = 1;
 	}
 

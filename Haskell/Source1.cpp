@@ -37,5 +37,8 @@ int main()
     show(Integer(-500)-Integer(700));
     show(Integer(-2)+Integer(2));
 
+	while ( 1 )
+		;
+
 	return 0;
 }
