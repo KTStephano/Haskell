@@ -2,15 +2,16 @@
 #include "Prelude.h"
 #include "Integer.h"
 
-Integer factHelper(Integer curr, Integer n)
-{
-	if ( curr == n ) return curr;
-	return curr * factHelper( curr + 1, n );
-}
-
 Integer fact(Integer n)
 {
-	return factHelper( 1, n );
+	if ( n == 1 ) return n;
+	return n * fact( n - 1 );
+}
+
+Integer add1n(Integer x, int n)
+{
+	if ( n == 0 ) return x;
+	return add1n( x + 1, n - 1 );
 }
 
 int main()
@@ -36,6 +37,11 @@ int main()
     show(Integer(-5)-Integer(-15));
     show(Integer(-500)-Integer(700));
     show(Integer(-2)+Integer(2));
+	show( Integer(2)*Integer(3)*Integer(4)*Integer(5)*Integer(6)*Integer(7)*Integer(8)*Integer(9)*Integer(10) );
+	show( Integer( 5 ) * Integer( 24 ) );
+	show( fact( 50 ) );
+    show( add1n( 1, 300 ) );
+	show( Integer()*-1 );
 
 	while ( 1 )
 		;

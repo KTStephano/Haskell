@@ -92,9 +92,12 @@ public:
 			else carry = 0;
 			result._integer[index] = sum;
 		}
+		if ( result == 0 ) result._isNegative = false; // Enforce this
 		return result;
 	}
 
+	// This one REALLY needs to be reworked if you can find an algorithm that is
+	// cleaner
 	Integer operator-( const Integer & other ) const
 	{
 		Integer result = Integer( *this );
@@ -140,6 +143,7 @@ public:
 		}
 
 		result._calculateUsedDigits();
+		if ( result == 0 ) result._isNegative = false; // Enforce this
 		return result;
 	}
 
@@ -149,6 +153,7 @@ public:
 		Integer row1;
 		int offset = 1;
 		int carry = 0;
+		//std::cout << "Times this " << *this << " versus that " << other << std::endl;
 
 		row0._usedDigits = _usedDigits;
 		for (size_t i = 0; i <= _usedDigits && i < _maxDigits; ++i)
@@ -162,22 +167,25 @@ public:
 
 		for (size_t i = 1; i < other._usedDigits; ++i)
 		{
-			row1._usedDigits = offset + (_usedDigits > other._usedDigits ? _usedDigits : other._usedDigits);
+			//row1._usedDigits = offset + _usedDigits;// +( _usedDigits > other._usedDigits ? _usedDigits : other._usedDigits );
 			for (size_t j = 0; j <= _usedDigits && j < _maxDigits; ++j )
 			{
-				if ( j == _usedDigits && carry != 0 ) ++row1._usedDigits;
-                //else if (j < _usedDigits) ++row1._usedDigits;
+				//if ( j + offset == row1._usedDigits && ( carry != 0 || ( _integer[j] > 0 && other._integer[i] > 0 ) ) ) ++row1._usedDigits;
+				//++row1._usedDigits;
 				row1._integer[j + offset] = (_integer[j] * other._integer[i]) + carry;
 				carry = row1._integer[j + offset] / 10;
 				row1._integer[j + offset] = row1._integer[j + offset] % _BASE;
 			}
+			row1._calculateUsedDigits();
+			//std::cout << "row1 " << row1 << std::endl;
 			row0 = row0 + row1;
 			++offset;
 			row1._zero();
 		}
 
-		//row0._usedDigits = 200;
-		if ( ( _isNegative && !other._isNegative ) || ( !_isNegative && other._isNegative ) ) row0._isNegative = true;
+		if ( row0 == 0 ) row0._isNegative = false;
+		else if ( ( _isNegative && !other._isNegative ) || ( !_isNegative && other._isNegative ) ) row0._isNegative = true;
+		//std::cout << "row0 " << row0 << std::endl;
 		return row0;
 	}
 
@@ -302,6 +310,7 @@ private:
 	{
 		for ( int i = 0; i < _maxDigits; ++i ) _integer[i] = 0;
 		_usedDigits = 1;
+		_isNegative = false;
 	}
 
 	void _calculateUsedDigits()
