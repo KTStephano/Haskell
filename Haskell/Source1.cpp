@@ -14,16 +14,11 @@ Integer add1n(Integer x, int n)
 	return add1n( x + 1, n - 1 );
 }
 
-#define body(body) body
-#define funcArgs(arg) arg
-#define lambda(name) \
-template<typename T> \
-auto name(funcArgs) { \
-    body \
-}
+auto add1 = []( auto x ) { return x + 1; };
 
 int main()
 {
+	/**
 	show( 10 + hlist( 1, 2, 3 ) + hlist() );
 	auto i = Integer();
 	for ( int j = 0; j < 200010; ++j ) ++i;
@@ -49,9 +44,19 @@ int main()
 	show( Integer( 5 ) * Integer( 24 ) );
 	show( fact( 300 ) );
     show( add1n( 1, 300 ) );
+	show( fact( 50 ) );
 	show( Integer()*-1 );
 	show( Integer( 2 ) / 2 );
 	show( Integer( "18446744073709551615" ) * Integer( "18446744073709551615" ) * Integer( "18446744073709551615" ) - Integer( "18446744073709551615" ) );
+	*/
+	show( Integer( 1234 )*Integer( 4321 ) );
+	show( Integer( 8 ) + Integer( 8 ) );
+	show( fact( 300 ) );
+
+	show( compose( add1, add1 )( 30000 ) );
+
+	while ( 1 )
+		;
 
 	return 0;
 }

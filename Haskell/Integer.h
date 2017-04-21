@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include <stdexcept>
+#include <vector>
 
 #define MAX_DIGITS 2048
 
@@ -11,20 +12,27 @@
 // See https://silentmatt.com/blog/2011/10/how-bigintegers-work-part-2-multiplication/
 // See https://courses.csail.mit.edu/6.006/spring11/exams/notes3-karatsuba
 // See https://web.stanford.edu/class/ee486/doc/chap5.pdf
+// See http://stackoverflow.com/questions/16965915/convert-a-big-hex-number-string-format-to-a-decimal-number-string-format-w (printing numbers in base 10 which are stored in other bases)
 class Integer
 {
-	int * _integer;
+	size_t * _integer;
 	size_t _maxDigits;
 	size_t _usedDigits;
-	const size_t _BASE = 10;
+	const size_t _BASE = 65536;
 	bool _isNegative = false;
+
+	Integer(const Integer & other, size_t startInclusive, size_t endExclusive) : Integer()
+	{
+		_deepCopy( other, startInclusive, endExclusive );
+	}
 
 public:
 	Integer() : _maxDigits( MAX_DIGITS ), _usedDigits( 1 )
 	{
-		_integer = new int[_maxDigits]();
+		_integer = new size_t[_maxDigits]();
 	}
 
+	// TODO FIX THIS TO WORK FOR ARBITRARY BASES
 	Integer(const char * num) : Integer()
 	{
 		size_t len = strlen( num );
@@ -60,10 +68,31 @@ public:
 	friend std::ostream & operator<<( std::ostream & out, const Integer & integer )
 	{
 		if ( integer._isNegative ) out << "-";
+		/**
 		for (int i = integer._usedDigits - 1; i >= 0; --i)
 		{
-			out << integer._integer[i];
+			out << integer._integer[i] << " ";
 		}
+		*/
+		std::vector<int> dec = std::vector<int>{ 0 };
+		dec.reserve( 2048 );
+		for (int i = integer._usedDigits - 1; i >= 0; --i)
+		{
+			int carry = integer._integer[i];
+			for (int j = 0; j < dec.size(); ++j)
+			{
+				int val = dec[j] * integer._BASE + carry;
+				dec[j] = val % 10;
+				carry = val / 10;
+			}
+			while (carry > 0)
+			{
+				dec.push_back( carry % 10 );
+				carry /= 10;
+			}
+		}
+		// Now dec stores the answer backwards
+		for ( int i = dec.size() - 1; i >= 0; --i ) out << dec[i];
 		return out;
 	}
 
@@ -136,12 +165,12 @@ public:
 						result._integer[j] -= 1;
 						for ( size_t k = j - 1; k > i; --k )
 						{
-							result._integer[k] = 9;
+							result._integer[k] = _BASE - 1;
 						}
 						break;
 					}
 				}
-				result._integer[i] += 10;
+				result._integer[i] += _BASE;
 			}
 			result._integer[i] -= other._integer[i];
 		}
@@ -165,7 +194,7 @@ public:
 			if ( i == _usedDigits && carry != 0 ) ++row0._usedDigits;
             //else if (i < _usedDigits) ++row0._usedDigits;
 			row0._integer[i] = _integer[i] * other._integer[0] + carry;
-			carry = row0._integer[i] / 10;
+			carry = row0._integer[i] / _BASE;
 			row0._integer[i] = row0._integer[i] % _BASE;
 		}
 
@@ -177,7 +206,7 @@ public:
 				//if ( j + offset == row1._usedDigits && ( carry != 0 || ( _integer[j] > 0 && other._integer[i] > 0 ) ) ) ++row1._usedDigits;
 				//++row1._usedDigits;
 				row1._integer[j + offset] = (_integer[j] * other._integer[i]) + carry;
-				carry = row1._integer[j + offset] / 10;
+				carry = row1._integer[j + offset] / _BASE;
 				row1._integer[j + offset] = row1._integer[j + offset] % _BASE;
 			}
 			row1._calculateUsedDigits();
@@ -193,14 +222,62 @@ public:
 		return row0;
 	}
 
+	// a = Xh * Yh
+	// b = Xl * Yl
+	// e = (Xh + Xl)(Yh + Yl) - a - d
+	// X*Y = a * base^n + e * base^(n/2) + d
+	/**
+	Integer operator*( const Integer & other ) const
+	{
+		size_t length = _usedDigits > other._usedDigits ? _usedDigits : other._usedDigits;
+		if ( length <= 1 ) return _integer[0] * other._integer[0];
+		size_t upperPartition = ceil( float( length ) / 2 );
+		size_t lowerPartition = floor( float( length ) / 2 );
+
+		Integer xUpper = Integer( *this, length - upperPartition, length );
+		Integer xLower = Integer( *this, 0, lowerPartition );
+		Integer yUpper = Integer( other, length - upperPartition, length );
+		Integer yLower = Integer( other, 0, lowerPartition );
+		Integer a = xUpper * yUpper;
+		Integer d = xLower * yLower;
+		Integer e = ( xUpper + xLower ) * ( yUpper + yLower ) - a - d;
+
+		return a * pow( _BASE, length ) + e * pow( _BASE, length / 2 ) + d;
+	}
+	*/
+
 	Integer operator/( const Integer & other ) const
 	{
+		/**
 		Integer numerator = Integer( *this );
 		Integer denominator = Integer( other );
 		Integer quotient = Integer();
 		Integer remainder = Integer();
 		_divide( numerator, denominator, quotient, remainder );
 		return quotient;
+		*/
+		if ( *this < other ) return 0;
+		if ( *this == other ) return 1;
+		size_t d = _BASE / ( other._integer[other._usedDigits - 1] + 1 );
+		Integer x = *this * d;
+		Integer y = other * d;
+		Integer result = Integer();
+		Integer temp = Integer();
+		size_t m = x._usedDigits - y._usedDigits;
+		for (int j = x._usedDigits - 1; j > x._usedDigits - m; --j)
+		{
+			size_t q = _BASE - 1;
+			if ( x._integer[j] != y._integer[y._usedDigits - 1] )
+			{
+				q = ( x._integer[j] * _BASE + x._integer[j - 1] ) / y._integer[y._usedDigits - 1];
+			}
+			while ( y._integer[y._usedDigits - 2] * q > ( x._integer[j] * _BASE + x._integer[j - 1] )*_BASE + x._integer[j - 2])
+			{
+				--q;
+			}
+
+		}
+		return *this;
 	}
 
 	Integer & operator++()
@@ -309,6 +386,19 @@ private:
 		for (size_t i = 0; i < _maxDigits; ++i)
 		{
 			_integer[i] = other._integer[i];
+		}
+	}
+
+	void _deepCopy(const Integer & other, size_t startInclusive, size_t endExclusive)
+	{
+		_maxDigits = other._maxDigits;
+		_isNegative = other._isNegative;
+		_usedDigits = endExclusive - startInclusive;
+		size_t index = 0;
+		for (size_t i = startInclusive; i < endExclusive; ++i)
+		{
+			_integer[index] = other._integer[i];
+			++index;
 		}
 	}
 
