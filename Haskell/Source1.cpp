@@ -8,6 +8,12 @@ Integer fact(Integer n)
 	return n * fact( n - 1 );
 }
 
+Integer factacc(Integer n, Integer acc)
+{
+    if (n == 1) return acc;
+    return factacc(n - 1, n * acc);
+}
+
 Integer add1n(Integer x, int n)
 {
 	if ( n == 0 ) return x;
@@ -54,9 +60,6 @@ int main()
 	show( fact( 300 ) );
 
 	show( compose( add1, add1 )( 30000 ) );
-
-	while ( 1 )
-		;
 
 	return 0;
 }

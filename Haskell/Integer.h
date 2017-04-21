@@ -250,36 +250,12 @@ public:
 	// page 257
 	Integer operator/( const Integer & other ) const
 	{
-		/**
 		Integer numerator = Integer( *this );
 		Integer denominator = Integer( other );
 		Integer quotient = Integer();
 		Integer remainder = Integer();
 		_divide( numerator, denominator, quotient, remainder );
 		return quotient;
-		*/
-		if ( *this < other ) return 0;
-		if ( *this == other ) return 1;
-		size_t d = _BASE / ( other._integer[other._usedDigits - 1] + 1 );
-		Integer x = *this * d;
-		Integer y = other * d;
-		Integer result = Integer();
-		Integer temp = Integer();
-		size_t m = x._usedDigits - y._usedDigits;
-		for (int j = x._usedDigits - 1; j > x._usedDigits - m; --j)
-		{
-			size_t q = _BASE - 1;
-			if ( x._integer[j] != y._integer[y._usedDigits - 1] )
-			{
-				q = ( x._integer[j] * _BASE + x._integer[j - 1] ) / y._integer[y._usedDigits - 1];
-			}
-			while ( y._integer[y._usedDigits - 2] * q > ( x._integer[j] * _BASE + x._integer[j - 1] )*_BASE + x._integer[j - 2])
-			{
-				--q;
-			}
-
-		}
-		return *this;
 	}
 
 	Integer & operator++()

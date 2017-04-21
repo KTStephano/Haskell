@@ -111,7 +111,5 @@ int _main3333324123125513125125()
     show("reverse_foldl",reverse_foldl(hlist(1,2,3,4)));
     show("reverse_foldr",reverse_foldr(hlist(1,2,3,4)));
 
-	while ( 1 )
-		;
 	return 0;
 }

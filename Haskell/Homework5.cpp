@@ -213,8 +213,5 @@ int _main1212212112()
     show(combinations(3,hlist("ABBD")));
     show(goldbach(60));
 
-	while ( 1 )
-		;
-
     return 0;
 }
