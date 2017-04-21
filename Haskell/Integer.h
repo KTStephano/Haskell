@@ -246,6 +246,8 @@ public:
 	}
 	*/
 
+	// See http://library.aceondo.net/ebooks/Computer_Science/algorithm-the_art_of_computer_programming-knuth.pdf
+	// page 257
 	Integer operator/( const Integer & other ) const
 	{
 		/**
