@@ -14,6 +14,14 @@ Integer add1n(Integer x, int n)
 	return add1n( x + 1, n - 1 );
 }
 
+#define body(body) body
+#define funcArgs(arg) arg
+#define lambda(name) \
+template<typename T> \
+auto name(funcArgs) { \
+    body \
+}
+
 int main()
 {
 	show( 10 + hlist( 1, 2, 3 ) + hlist() );
@@ -44,9 +52,6 @@ int main()
 	show( Integer()*-1 );
 	show( Integer( 2 ) / 2 );
 	show( Integer( "18446744073709551615" ) * Integer( "18446744073709551615" ) * Integer( "18446744073709551615" ) - Integer( "18446744073709551615" ) );
-
-	while ( 1 )
-		;
 
 	return 0;
 }

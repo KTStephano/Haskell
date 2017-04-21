@@ -9,6 +9,8 @@
 // A possible implementation of a base-10 Big Integer
 // See http://faculty.cse.tamu.edu/djimenez/ut/utsa/cs3343/lecture20.html
 // See https://silentmatt.com/blog/2011/10/how-bigintegers-work-part-2-multiplication/
+// See https://courses.csail.mit.edu/6.006/spring11/exams/notes3-karatsuba
+// See https://web.stanford.edu/class/ee486/doc/chap5.pdf
 class Integer
 {
 	int * _integer;
