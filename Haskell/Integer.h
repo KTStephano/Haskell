@@ -180,6 +180,7 @@ public:
 		return result;
 	}
 
+    /*
 	Integer operator*( const Integer & other ) const
 	{
 		Integer row0;
@@ -221,30 +222,59 @@ public:
 		//std::cout << "row0 " << row0 << std::endl;
 		return row0;
 	}
+     */
 
-	// a = Xh * Yh
-	// b = Xl * Yl
-	// e = (Xh + Xl)(Yh + Yl) - a - d
-	// X*Y = a * base^n + e * base^(n/2) + d
-	/**
-	Integer operator*( const Integer & other ) const
-	{
-		size_t length = _usedDigits > other._usedDigits ? _usedDigits : other._usedDigits;
-		if ( length <= 1 ) return _integer[0] * other._integer[0];
-		size_t upperPartition = ceil( float( length ) / 2 );
-		size_t lowerPartition = floor( float( length ) / 2 );
+    Integer operator*(const Integer & other) const
+    {
+        Integer result = 0;
+        size_t n = _usedDigits;
+        size_t m = other._usedDigits;
+        result._usedDigits = m > n ? m : n;
+        result._usedDigits = m + n + 1;
+        unsigned long long temp = 0;
+        size_t j, i;
+        for (j = 0; j < m; ++j)
+        {
+            if (other._integer[j] == 0)
+            {
+                result._integer[j] = 0;
+                continue;
+            }
+            size_t carry = 0;
+            for (i = 0; i < n; ++i)
+            {
+                temp = _integer[i] * other._integer[j] + result._integer[i + j] + carry;
+                //std::cout << "\t\t" << temp << std::endl;
+                result._integer[i + j] = temp % _BASE;
+                carry = temp / _BASE;
+            }
+            //result._integer[i + j + 1] = carry;
+            result._integer[m + n - j - 2] = carry;
+            std::cout << "multiply res " << result << std::endl;
+        }
 
-		Integer xUpper = Integer( *this, length - upperPartition, length );
-		Integer xLower = Integer( *this, 0, lowerPartition );
-		Integer yUpper = Integer( other, length - upperPartition, length );
-		Integer yLower = Integer( other, 0, lowerPartition );
-		Integer a = xUpper * yUpper;
-		Integer d = xLower * yLower;
-		Integer e = ( xUpper + xLower ) * ( yUpper + yLower ) - a - d;
+        //result._calculateUsedDigits();
+        if (_isNegative && !other._isNegative || !_isNegative && other._isNegative) result._isNegative = true;
+        if (result == 0) result._isNegative = false;
+        std::cout << "result " << result << std::endl;
+        return result;
+    }
 
-		return a * pow( _BASE, length ) + e * pow( _BASE, length / 2 ) + d;
-	}
-	*/
+    // See http://stackoverflow.com/questions/101439/the-most-efficient-way-to-implement-an-integer-based-power-function-powint-int
+    friend Integer pow(Integer base, unsigned int exp)
+    {
+        Integer result = 1;
+        while (exp)
+        {
+            if (exp & 1)
+            {
+                result = result * base;
+            }
+            exp >>= 1;
+            base = base * base;
+        }
+        return result;
+    }
 
 	// See http://library.aceondo.net/ebooks/Computer_Science/algorithm-the_art_of_computer_programming-knuth.pdf
 	// page 257
@@ -257,6 +287,11 @@ public:
 		_divide( numerator, denominator, quotient, remainder );
 		return quotient;
 	}
+
+    Integer operator<<(unsigned int digits)
+    {
+        return *this * pow(2,digits);
+    }
 
 	Integer & operator++()
 	{
@@ -322,6 +357,11 @@ public:
 		return ( *this ) < other || ( *this ) == other;
 	}
 
+    bool operator!=(const Integer & other) const
+    {
+        return *this < other || *this > other;
+    }
+
 private:
 	/** Privately-overloaded operators */
 	Integer & operator=( const Integer & other )
@@ -330,7 +370,7 @@ private:
 		return *this;
 	}
 
-	Integer & operator=( Integer & other )
+	Integer & operator=( Integer && other )
 	{
 		_shallowCopy( other );
 		return *this;
