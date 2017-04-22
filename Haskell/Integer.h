@@ -33,15 +33,16 @@ public:
 	}
 
 	// TODO FIX THIS TO WORK FOR ARBITRARY BASES
-	Integer(const char * num) : Integer()
+	Integer(const char * num, size_t base = 10) //: Integer()
 	{
 		size_t len = strlen( num );
-		if ( len >= _maxDigits ) throw std::runtime_error( "Integer greater than 2048 digits" );
-		for (int i = len - 1; i >= 0; --i)
+		//if ( len >= _maxDigits ) throw std::runtime_error( "Integer greater than 2048 digits" );
+		Integer result = 0;
+		for (int i = 0; i < len; ++i)
 		{
-			_integer[i] = _toInt( num[len - i - 1] );
+			result = result * base + _toInt( num[i] );
 		}
-		_usedDigits = len;
+		_shallowCopy( result );
 	}
 
 	Integer(const Integer & other) : Integer()
@@ -224,20 +225,21 @@ public:
 	}
      */
 
+	// See http://library.aceondo.net/ebooks/Computer_Science/algorithm-the_art_of_computer_programming-knuth.pdf
+	// page 253-254
     Integer operator*(const Integer & other) const
     {
         Integer result = 0;
         size_t n = _usedDigits;
         size_t m = other._usedDigits;
-        result._usedDigits = m > n ? m : n;
-        result._usedDigits = m + n + 1;
+        //result._usedDigits = m + n + 3;
         unsigned long long temp = 0;
         size_t j, i;
         for (j = 0; j < m; ++j)
         {
             if (other._integer[j] == 0)
             {
-                result._integer[j] = 0;
+                result._integer[m + j] = 0; // This offset might be wrong
                 continue;
             }
             size_t carry = 0;
@@ -249,14 +251,12 @@ public:
                 carry = temp / _BASE;
             }
             //result._integer[i + j + 1] = carry;
-            result._integer[m + n - j - 2] = carry;
-            std::cout << "multiply res " << result << std::endl;
+            result._integer[i + j] = carry;
         }
 
-        //result._calculateUsedDigits();
+        result._calculateUsedDigits();
         if (_isNegative && !other._isNegative || !_isNegative && other._isNegative) result._isNegative = true;
         if (result == 0) result._isNegative = false;
-        std::cout << "result " << result << std::endl;
         return result;
     }
 
@@ -288,7 +288,7 @@ public:
 		return quotient;
 	}
 
-    Integer operator<<(unsigned int digits)
+    Integer operator<<(unsigned int digits) const
     {
         return *this * pow(2,digits);
     }
