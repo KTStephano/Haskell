@@ -33,7 +33,6 @@ public:
 		_integer = new size_t[_maxDigits]();
 	}
 
-	// TODO FIX THIS TO WORK FOR ARBITRARY BASES
 	Integer(const char * num, size_t base = 10) //: Integer()
 	{
 		size_t len = strlen( num );
@@ -321,6 +320,7 @@ public:
 			temp2 = temp1 - v * q_norm;
 			if ( temp2 < 0 )
 			{
+				std::cout << "TRIPPED\n";
 				temp2 = temp1 * pow( Integer( _BASE ), n + 1 );
 				--q_norm;
 				temp2 = v + temp2;

@@ -77,7 +77,7 @@ int main()
 	//show( Integer( 2 ) * 2 );
 	show( Integer( 1234 ) / 27 );
 	show( Integer( 1234551 ) / Integer( -23415 ) );
-	show( Integer( 12551223345 ) / Integer( 234 ) );
+	show( Integer( "8124895812349890123901239045195121239095041820948123908130945015012931823123908" ) / Integer( 234 ) );
 	show( Integer( 234 ) / Integer( 34 ) );
 
 	while ( 1 )
