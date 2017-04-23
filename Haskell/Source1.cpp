@@ -24,6 +24,7 @@ auto add1 = []( auto x ) { return x + 1; };
 
 int main()
 {
+	/**
 	show( 10 + hlist( 1, 2, 3 ) + hlist() );
 	auto i = Integer();
 	for ( int j = 0; j < 200010; ++j ) ++i;
@@ -71,6 +72,13 @@ int main()
     show(Integer(10)*Integer(362880));
 	show( Integer( 914 ) * 84 );
 	show( Integer( "8124895812349890123901239045195121239095041820948123908130945015012931823123908" ) );
+	*/
+
+	//show( Integer( 2 ) * 2 );
+	show( Integer( 1234 ) / 27 );
+	show( Integer( 1234551 ) / Integer( -23415 ) );
+	show( Integer( 12551223345 ) / Integer( 234 ) );
+	show( Integer( 234 ) / Integer( 34 ) );
 
 	while ( 1 )
 		;

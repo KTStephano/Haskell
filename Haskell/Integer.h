@@ -6,6 +6,7 @@
 #include <vector>
 
 #define MAX_DIGITS 2048
+#define INTEGER_DEBUG 1 // Set this to 0 when done
 
 // A possible implementation of a base-10 Big Integer
 // See http://faculty.cse.tamu.edu/djimenez/ut/utsa/cs3343/lecture20.html
@@ -18,7 +19,7 @@ class Integer
 	size_t * _integer;
 	size_t _maxDigits;
 	size_t _usedDigits;
-	const size_t _BASE = 65536;
+	const size_t _BASE = 10;
 	bool _isNegative = false;
 
 	Integer(const Integer & other, size_t startInclusive, size_t endExclusive) : Integer()
@@ -79,7 +80,7 @@ public:
 		dec.reserve( 2048 );
 		for (int i = integer._usedDigits - 1; i >= 0; --i)
 		{
-			int carry = integer._integer[i];
+			int carry = integer[i];
 			for (int j = 0; j < dec.size(); ++j)
 			{
 				int val = dec[j] * integer._BASE + carry;
@@ -117,14 +118,14 @@ public:
 		for (size_t index = 0; index <= maxIndex && index < _maxDigits; ++index)
 		{
 			if ( index == maxIndex && carry == 1 ) ++result._usedDigits;
-			int sum = result._integer[index] + other._integer[index] + carry;
+			int sum = result[index] + other[index] + carry;
 			if (sum >= _BASE)
 			{
 				carry = 1;
 				sum -= _BASE; // Something like 8*8 gives 16, so subtracting it by 10 gives us 6
 			}
 			else carry = 0;
-			result._integer[index] = sum;
+			result[index] = sum;
 		}
 		if ( result == 0 ) result._isNegative = false; // Enforce this
 		return result;
@@ -134,7 +135,7 @@ public:
 	// cleaner
 	Integer operator-( const Integer & other ) const
 	{
-		Integer result = Integer( *this );
+		Integer result = *this;
         // -x-y
         if (_isNegative && !other._isNegative)
         {
@@ -157,23 +158,23 @@ public:
 
 		for (size_t i = 0; i < other._usedDigits; ++i)
 		{
-			if ( result._integer[i] < other._integer[i])
+			if ( result[i] < other[i])
 			{
 				for (size_t j = i + 1; j < _usedDigits; ++j)
 				{
-					if ( result._integer[j] > 0)
+					if ( result[j] > 0)
 					{
-						result._integer[j] -= 1;
+						result[j] -= 1;
 						for ( size_t k = j - 1; k > i; --k )
 						{
-							result._integer[k] = _BASE - 1;
+							result[k] = _BASE - 1;
 						}
 						break;
 					}
 				}
-				result._integer[i] += _BASE;
+				result[i] += _BASE;
 			}
-			result._integer[i] -= other._integer[i];
+			result[i] -= other[i];
 		}
 
 		result._calculateUsedDigits();
@@ -237,21 +238,21 @@ public:
         size_t j, i;
         for (j = 0; j < m; ++j)
         {
-            if (other._integer[j] == 0)
+            if (other[j] == 0)
             {
-                result._integer[m + j] = 0; // This offset might be wrong
+                result[m + j] = 0; // This offset might be wrong
                 continue;
             }
             size_t carry = 0;
             for (i = 0; i < n; ++i)
             {
-                temp = _integer[i] * other._integer[j] + result._integer[i + j] + carry;
+                temp = _integer[i] * other[j] + result[i + j] + carry;
                 //std::cout << "\t\t" << temp << std::endl;
-                result._integer[i + j] = temp % _BASE;
+                result[i + j] = temp % _BASE;
                 carry = temp / _BASE;
             }
             //result._integer[i + j + 1] = carry;
-            result._integer[i + j] = carry;
+            result[i + j] = carry;
         }
 
         result._calculateUsedDigits();
@@ -277,15 +278,60 @@ public:
     }
 
 	// See http://library.aceondo.net/ebooks/Computer_Science/algorithm-the_art_of_computer_programming-knuth.pdf
-	// page 257
+	// page 257-258
 	Integer operator/( const Integer & other ) const
 	{
+		//std::cout << "Got " << *this << " " << other << std::endl;
+		/**
 		Integer numerator = Integer( *this );
 		Integer denominator = Integer( other );
 		Integer quotient = Integer();
 		Integer remainder = Integer();
 		_divide( numerator, denominator, quotient, remainder );
 		return quotient;
+		*/
+		Integer u = *this;
+		Integer v = other;
+		size_t n = v._usedDigits;
+		size_t m = _usedDigits - n;
+		if ( u < 0 ) u = u * -1;
+		if ( v < 0 ) v = v * -1;
+		if ( v == 0 ) throw std::runtime_error( "Division by 0 in Integer class" );
+		if ( u < v ) return 0;
+		Integer q = 0;
+		Integer temp1 = 0;
+		Integer temp2 = 0;
+		size_t d = _BASE / ( v[n - 1] + 1 );
+		u = u * d;
+		v = v * d;
+		long long j;
+		for (long long k = 0; k <= m; ++k)
+		{
+			j = m + n - k;
+			size_t q_norm;
+			if ( u[j] == v[n - 1] ) q_norm = _BASE - 1;
+			else q_norm = ( u[j] * _BASE + u[j - 1] ) / v[n - 1];
+			
+			while ( v[n - 2] * q_norm > ( u[j] * _BASE + u[j - 1] - q_norm * v[n - 1] ) * _BASE + u[j - 2] )
+			{
+				--q_norm;
+			}
+
+			temp1 = Integer( u, j - n, j + 1 );
+			temp2 = temp1 - v * q_norm;
+			if ( temp2 < 0 )
+			{
+				temp2 = temp1 * pow( Integer( _BASE ), n + 1 );
+				--q_norm;
+				temp2 = v + temp2;
+			}
+			for ( long long i = j - n; i < j + 1; ++i ) u[i] = temp2[i - (j - n)];
+
+			q = q * _BASE + q_norm;
+		}
+		
+		if ( _isNegative && !other._isNegative || !_isNegative && other._isNegative ) q._isNegative = true;
+		return q;
 	}
 
     Integer operator<<(unsigned int digits) const
@@ -300,10 +346,10 @@ public:
 		while (index < _maxDigits)
 		{
 			if ( index >= _usedDigits ) ++_usedDigits;
-			_integer[index] += 1;
-			if (_integer[index] % _BASE == 0)
+			(*this)[index] += 1;
+			if ((*this)[index] % _BASE == 0)
 			{
-				_integer[index] = 0;
+				(*this)[index] = 0;
 				++index;
 				continue;
 			}
@@ -318,7 +364,7 @@ public:
 		if ( _usedDigits != other._usedDigits ) return false;
 		for (size_t index = 0; index < _usedDigits; ++index)
 		{
-			if ( _integer[index] != other._integer[index] ) return false;
+			if ( (*this)[index] != other[index] ) return false;
 		}
 		return true;
 	}
@@ -332,11 +378,11 @@ public:
 		if ( _usedDigits > other._usedDigits && bothNegative ) return false;
 		if ( _usedDigits < other._usedDigits && !bothNegative ) return false;
 		if ( _usedDigits < other._usedDigits && bothNegative ) return true;
-		for ( int index = _usedDigits - 1; index >= 0; ++index )
+		for ( int index = _usedDigits - 1; index >= 0; --index )
 		{
-			if ( bothNegative && _integer[index] < other._integer[index] ) return true;
-			if ( !bothNegative && _integer[index] > other._integer[index] ) return true;
-			if ( _integer[index] == other._integer[index] ) continue;
+			if ( bothNegative && (*this)[index] < other[index] ) return true;
+			if ( !bothNegative && (*this)[index] > other[index] ) return true;
+			if ( (*this)[index] == other[index] ) continue;
 			break;
 		}
 		return false;
@@ -349,7 +395,7 @@ public:
 
 	bool operator<( const Integer & other ) const
 	{
-		return !( ( *this ) > other );
+		return *this  > other == false && (*this == other) == false;
 	}
 
 	bool operator<=( const Integer & other ) const
@@ -376,6 +422,27 @@ private:
 		return *this;
 	}
 
+	size_t operator[](size_t index) const
+	{
+#if INTEGER_DEBUG
+		if ( !_isInRange(index) ) throw std::runtime_error( "Index out of bounds inside of Integer class" );
+#endif
+		return _integer[index];
+	}
+
+	size_t & operator[]( size_t index )
+	{
+#if INTEGER_DEBUG
+		if ( !_isInRange(index) ) throw std::runtime_error( "Index out of bounds inside of Integer class" );
+#endif
+		return _integer[index];
+	}
+
+	bool _isInRange(size_t index) const
+	{
+		return index < _maxDigits;
+	}
+
 private:
 	void _setToInteger(int i)
 	{
@@ -389,7 +456,7 @@ private:
 
 		while (i)
 		{
-			_integer[index] = i % _BASE;
+			(*this)[index] = i % _BASE;
 			++index;
 			i = i / _BASE;
 		}
@@ -403,7 +470,7 @@ private:
         _maxDigits = other._maxDigits;
 		for (size_t i = 0; i < _maxDigits; ++i)
 		{
-			_integer[i] = other._integer[i];
+			(*this)[i] = other[i];
 		}
 	}
 
@@ -415,7 +482,7 @@ private:
 		size_t index = 0;
 		for (size_t i = startInclusive; i < endExclusive; ++i)
 		{
-			_integer[index] = other._integer[i];
+			(*this)[index] = other[i];
 			++index;
 		}
 	}
@@ -432,7 +499,7 @@ private:
 
 	void _zero()
 	{
-		for ( int i = 0; i < _maxDigits; ++i ) _integer[i] = 0;
+		for ( int i = 0; i < _maxDigits; ++i ) (*this)[i] = 0;
 		_usedDigits = 1;
 		_isNegative = false;
 	}
@@ -441,7 +508,7 @@ private:
 	{
 		for (int i = _maxDigits - 1; i >= 0; --i)
 		{
-			if (_integer[i] > 0)
+			if ((*this)[i] > 0)
 			{
 				_usedDigits = i + 1;
 				return;
