@@ -358,6 +358,26 @@ public:
 		return *this;
 	}
 
+	friend Integer operator+( int a, Integer b )
+	{
+		return Integer( a ) + b;
+	}
+
+	friend Integer operator-( int a, Integer b )
+	{
+		return Integer( a ) - b;
+	}
+
+	friend Integer operator*( int a, Integer b )
+	{
+		return Integer( a ) * b;
+	}
+
+	friend Integer operator/( int a, Integer b )
+	{
+		return Integer( a ) / b;
+	}
+
 	bool operator==( const Integer & other ) const
 	{
 		if ( _isNegative && !other._isNegative || !_isNegative && other._isNegative ) return false;

@@ -22,6 +22,23 @@ Integer add1n(Integer x, int n)
 
 auto add1 = []( auto x ) { return x + 1; };
 
+template<typename Lambda>
+auto Y(Lambda f)
+{
+	return f( [=]( auto ... x ) { return Y( f )( x... ); } );
+}
+
+auto almost_factorial = [](auto f)
+{
+	return [=](auto n)
+	{
+		if ( n == 1 ) return n;
+		return n * f( n - 1 );
+	};
+};
+
+auto factorial2 = Y( almost_factorial );
+
 int main()
 {
 	/**
@@ -79,6 +96,8 @@ int main()
 	show( Integer( 1234551 ) / Integer( -23415 ) );
 	show( Integer( "8124895812349890123901239045195121239095041820948123908130945015012931823123908" ) / Integer( 234 ) );
 	show( Integer( 234 ) / Integer( 34 ) );
+
+	show( factorial2( Integer(300) ) );
 
 	while ( 1 )
 		;
