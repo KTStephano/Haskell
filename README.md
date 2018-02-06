@@ -13,7 +13,7 @@ There are a lot of things that I left up to future people/future iterations of t
 Integer operations (+,-,*,exponentiation) have been implemented, but other things including division that Haskell easily
 allows you to do with large integers have been left out.
 
-The biggest area that has been entirely untouched that is firmly entrenched in Haskell at this point are things like
+The biggest area that I've left entirely untouched that is firmly entrenched in Haskell at this point are things like
 Monads, MonadTransformers, etc. I have done some research into this area and experimented a little, and from what I understand
 these things can be done in C++ but it will require significantly more time to actually implement. Unfortunately I am not
 (yet) convinced that it can be done in a way that looks and feels clean to use in C++.
